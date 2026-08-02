@@ -1,0 +1,37 @@
+spring:
+  profiles:
+    active: '@spring.profiles.active@'
+server:
+  error:
+    include-message: always
+jwt:
+  http:
+    request:
+      header: Authorization
+  token:
+    expiration:
+      in:
+        seconds: 900
+  signing:
+    key:
+      secret: ${CONFERENCE_SCHDLR_APP_JWT_SECRET}
+
+---
+spring:
+  profiles: dev
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+  h2:
+    console:
+      enabled: true
+  flyway:
+    enabled: false
+logging:
+  level:
+    mh.michael.*: DEBUG
