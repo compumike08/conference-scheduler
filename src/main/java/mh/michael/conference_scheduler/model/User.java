@@ -22,7 +22,7 @@ public class User {
   @Column(unique = true, nullable = false)
   private String username;
 
-  @Column(unique = true, nullable = false)
+  @Column(nullable = false)
   private String email;
 
   @Column(nullable = false)
@@ -33,4 +33,7 @@ public class User {
     joinColumns = @JoinColumn(name = "user_id"),
     inverseJoinColumns = @JoinColumn(name = "role_id"))
   private Set<UserRole> roles = new HashSet<>();
+
+  @OneToOne(mappedBy = "memberUser")
+  private Member member;
 }
