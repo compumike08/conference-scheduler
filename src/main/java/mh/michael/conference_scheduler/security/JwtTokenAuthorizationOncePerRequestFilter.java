@@ -1,6 +1,5 @@
 package mh.michael.conference_scheduler.security;
 
-import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,6 +32,12 @@ public class JwtTokenAuthorizationOncePerRequestFilter extends OncePerRequestFil
   }
 
   @Override
+  protected boolean shouldNotFilter(HttpServletRequest request) {
+    String path = request.getRequestURI();
+    return path.equals("/authenticate") || path.equals("/registerUser") || path.equals("/sendForgotPasswordEmail") || path.equals("/resetPassword");
+  }
+
+  @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
     log.debug("Authentication Request For '{}'", request.getRequestURL());
 
@@ -46,8 +51,6 @@ public class JwtTokenAuthorizationOncePerRequestFilter extends OncePerRequestFil
         uuid = jwtTokenUtil.getSubjectFromToken(jwtToken);
       } catch (IllegalArgumentException e) {
         log.error("JWT_TOKEN_UNABLE_TO_GET_USER_UUID", e);
-      } catch (ExpiredJwtException e) {
-        log.warn("JWT_TOKEN_EXPIRED", e);
       }
     } else {
       log.warn("JWT_TOKEN_DOES_NOT_START_WITH_BEARER_STRING");
