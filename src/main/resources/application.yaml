@@ -9,6 +9,7 @@ jwt:
     request:
       header: Authorization
   token:
+    issuer: conference-scheduler
     expiration:
       in:
         seconds: 900

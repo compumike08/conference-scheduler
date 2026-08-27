@@ -4,25 +4,19 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.impl.DefaultClock;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import mh.michael.conference_scheduler.model.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 @Component
 @Slf4j
-public class JwtTokenUtil implements Serializable {
-  @Serial
-  private static final long serialVersionUID = -3301605591108950415L;
+public class JwtTokenUtil {
   private final Clock clock = DefaultClock.INSTANCE;
 
   @Value("${jwt.signing.key.secret}")
@@ -31,14 +25,22 @@ public class JwtTokenUtil implements Serializable {
   @Value("${jwt.token.expiration.in.seconds}")
   private Long expiration;
 
-  private static final String AUTH_AUD = "monopoly-banking--auth";
-  private static final String FORGOT_PASSWORD_AUD = "monopoly-banking--forgot-password";
+  @Value("${jwt.token.issuer}")
+  private String issuer;
+
+  private String getAuthAud() {
+    return issuer + "--auth";
+  }
+
+  private String getForgotPasswordAud() {
+    return issuer + "--forgot-password";
+  }
 
   public String getSubjectFromToken(String token) {
     return getClaimFromToken(token, Claims::getSubject);
   }
 
-  public String getAudienceFromToken(String token) {
+  public Set<String> getAudienceFromToken(String token) {
     return getClaimFromToken(token, Claims::getAudience);
   }
 
@@ -58,9 +60,14 @@ public class JwtTokenUtil implements Serializable {
 
   private Claims getAllClaimsFromToken(String token) {
     byte[] keyBytes = Decoders.BASE64.decode(secret);
-    Key key = Keys.hmacShaKeyFor(keyBytes);
-    JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
-    return jwtParser.parseClaimsJws(token).getBody();
+    SecretKey key = Keys.hmacShaKeyFor(keyBytes);
+
+    try {
+      return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+    } catch (ExpiredJwtException | IncorrectClaimException e) {
+      log.warn("Expired JWT token or incorrect claims when extracting claims: {}", e.getMessage());
+      return e.getClaims();
+    }
   }
 
   private Boolean isTokenExpired(String token) {
@@ -74,27 +81,31 @@ public class JwtTokenUtil implements Serializable {
   }
 
   public String generateTokenForAuthentication(JwtUserDetails userDetails) {
-    Map<String, Object> claims = new HashMap<>();
-    claims.put("aud", AUTH_AUD);
-    return doGenerateToken(claims, userDetails.getUserUuid().toString());
+    return doGenerateToken(userDetails.getUserUuid().toString(), getAuthAud());
   }
 
   public String generateTokenForForgotPassword(User user) {
     String emailAddress = user.getEmail();
-    Map<String, Object> claims = new HashMap<>();
-    claims.put("aud", FORGOT_PASSWORD_AUD);
-    return doGenerateToken(claims, emailAddress);
+    return doGenerateToken(emailAddress, getForgotPasswordAud());
   }
 
-  private String doGenerateToken(Map<String, Object> claims, String subject) {
+  private String doGenerateToken(String subject, String audience) {
     final Date createdDate = clock.now();
     final Date expirationDate = calculateExpirationDate(createdDate);
 
     byte[] keyBytes = Decoders.BASE64.decode(secret);
-    Key key = Keys.hmacShaKeyFor(keyBytes);
+    SecretKey key = Keys.hmacShaKeyFor(keyBytes);
 
-    return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(createdDate)
-      .setExpiration(expirationDate).signWith(key, SignatureAlgorithm.HS512).compact();
+    return Jwts.builder()
+      .subject(subject)
+      .audience()
+        .add(audience)
+        .and()
+      .issuer(issuer)
+      .issuedAt(createdDate)
+      .expiration(expirationDate)
+      .signWith(key, Jwts.SIG.HS512)
+      .compact();
   }
 
   public Boolean canTokenBeRefreshed(String token) {
@@ -106,30 +117,28 @@ public class JwtTokenUtil implements Serializable {
     final Date expirationDate = calculateExpirationDate(createdDate);
 
     final Claims claims = getAllClaimsFromToken(token);
-    claims.setIssuedAt(createdDate);
-    claims.setExpiration(expirationDate);
 
     byte[] keyBytes = Decoders.BASE64.decode(secret);
-    Key key = Keys.hmacShaKeyFor(keyBytes);
+    SecretKey key = Keys.hmacShaKeyFor(keyBytes);
 
-    return Jwts.builder().setClaims(claims).signWith(key, SignatureAlgorithm.HS512).compact();
+    return Jwts.builder()
+      .claims(claims)
+      .issuer(issuer)
+      .issuedAt(createdDate)
+      .expiration(expirationDate)
+      .signWith(key, Jwts.SIG.HS512)
+      .compact();
   }
 
   public Boolean validateTokenForAuthentication(String token, JwtUserDetails userDetails) {
     byte[] keyBytes = Decoders.BASE64.decode(secret);
-    Key key = Keys.hmacShaKeyFor(keyBytes);
+    SecretKey key = Keys.hmacShaKeyFor(keyBytes);
 
     try {
-      Jwts.parserBuilder().setSigningKey(key)
+      Jwts.parser().verifyWith(key)
         .requireSubject(userDetails.getUserUuid().toString())
-        .requireAudience(AUTH_AUD).build().parseClaimsJws(token);
-    } catch (
-      ExpiredJwtException |
-      UnsupportedJwtException |
-      MalformedJwtException |
-      SignatureException |
-      IllegalArgumentException e
-    ) {
+        .requireIssuer(issuer).requireAudience(getAuthAud()).build().parseSignedClaims(token);
+    } catch (RuntimeException e) {
       log.error("validateTokenForAuthentication error: ", e);
       return false;
     }
@@ -139,19 +148,13 @@ public class JwtTokenUtil implements Serializable {
 
   public Boolean validateTokenForForgotPassword(String token, User user) {
     byte[] keyBytes = Decoders.BASE64.decode(secret);
-    Key key = Keys.hmacShaKeyFor(keyBytes);
+    SecretKey key = Keys.hmacShaKeyFor(keyBytes);
 
     try {
-      Jwts.parserBuilder().setSigningKey(key)
+      Jwts.parser().verifyWith(key)
         .requireSubject(user.getEmail())
-        .requireAudience(FORGOT_PASSWORD_AUD).build().parseClaimsJws(token);
-    } catch (
-      ExpiredJwtException |
-      UnsupportedJwtException |
-      MalformedJwtException |
-      SignatureException |
-      IllegalArgumentException e
-    ) {
+        .requireIssuer(issuer).requireAudience(getForgotPasswordAud()).build().parseSignedClaims(token);
+    } catch (RuntimeException e) {
       log.error("validateTokenForForgotPassword error: ", e);
       return false;
     }
