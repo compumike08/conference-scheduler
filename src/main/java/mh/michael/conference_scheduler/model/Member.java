@@ -2,6 +2,7 @@ package mh.michael.conference_scheduler.model;
 
 import lombok.*;
 import javax.persistence.*;
+import java.util.List;
 import java.util.UUID;
 
 @Entity(name = "member")
@@ -27,4 +28,7 @@ public class Member {
   @OneToOne
   @JoinColumn(unique = true, name = "member_user_id")
   private User memberUser;
+
+  @ManyToMany(mappedBy = "members")
+  private List<Event> events;
 }
