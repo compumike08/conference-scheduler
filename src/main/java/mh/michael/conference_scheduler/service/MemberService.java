@@ -15,6 +15,7 @@ import mh.michael.conference_scheduler.repository.UserRepository;
 import mh.michael.conference_scheduler.repository.UserRoleRepository;
 import mh.michael.conference_scheduler.security.JwtUserDetails;
 import mh.michael.conference_scheduler.util.ConvertDTOUtil;
+import mh.michael.conference_scheduler.util.UuidMethods;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -87,5 +88,21 @@ public class MemberService {
     return members.stream()
       .map(ConvertDTOUtil::convertMemberToMemberDTO)
       .collect(Collectors.toList());
+  }
+
+  @Transactional
+  public MemberDTO getMemberByUuid(String memberUuid) {
+    UUID uuid = UuidMethods.handleUuidFromStringError(
+      memberUuid, "Invalid member UUID", HttpStatus.BAD_REQUEST
+    );
+
+    Optional<Member> optionalMember = memberRepository.findByMemberUuid(uuid);
+
+    if (optionalMember.isEmpty()) {
+      log.error("Member with UUID {} not found in getMemberByUuid", uuid);
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Member not found");
+    }
+
+    return ConvertDTOUtil.convertMemberToMemberDTO(optionalMember.get());
   }
 }

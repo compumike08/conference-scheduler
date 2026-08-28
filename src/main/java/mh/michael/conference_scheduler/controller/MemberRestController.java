@@ -34,4 +34,10 @@ public class MemberRestController {
     log.debug("MemberRestController::getAllMembers");
     return memberService.getAllMembers();
   }
+
+  @GetMapping("/memberUuid/{memberUuid}")
+  public MemberDTO memberUuid(@PathVariable String memberUuid) {
+    log.debug("MemberRestController::memberUuid");
+    return memberService.getMemberByUuid(memberUuid);
+  }
 }
