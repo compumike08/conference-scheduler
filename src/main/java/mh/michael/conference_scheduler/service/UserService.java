@@ -2,6 +2,7 @@ package mh.michael.conference_scheduler.service;
 
 import lombok.extern.slf4j.Slf4j;
 import mh.michael.conference_scheduler.constants.EUserRole;
+import mh.michael.conference_scheduler.dto.AddRoleToUserRequestDTO;
 import mh.michael.conference_scheduler.dto.NewUserRequestDTO;
 import mh.michael.conference_scheduler.dto.UserDTO;
 import mh.michael.conference_scheduler.model.User;
@@ -164,6 +165,49 @@ public class UserService {
     user.setEmail(requestDTO.getEmail());
 
     User savedUser = userRepository.save(user);
+    return convertUserToUserDTO(savedUser);
+  }
+
+  @Transactional
+  public UserDTO addRoleToUser(AddRoleToUserRequestDTO addRoleToUserRequestDTO) {
+    UUID uuid = UuidMethods.handleUuidFromStringError(
+      addRoleToUserRequestDTO.getUserUuid(), "Invalid user UUID", HttpStatus.BAD_REQUEST
+    );
+
+    String newUserRoleString = addRoleToUserRequestDTO.getNewRole();
+
+    EUserRole newUserRoleEnum;
+
+    try {
+      newUserRoleEnum = EUserRole.valueOf(newUserRoleString);
+    } catch (IllegalArgumentException e) {
+      log.error("Invalid user role: {}", newUserRoleString, e);
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid role");
+    }
+
+    Optional<User> optUser = userRepository.findByUserUuid(uuid);
+
+    if (optUser.isEmpty()) {
+      log.error("Unable to find user with user UUID: {}", addRoleToUserRequestDTO.getUserUuid());
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+    }
+
+    Optional<UserRole> optNewUserRole = userRoleRepository.findByName(newUserRoleEnum);
+
+    if (optNewUserRole.isEmpty()) {
+      log.error("Unable to find user role with name of: {}", newUserRoleEnum.name());
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG);
+    }
+
+    User user = optUser.get();
+    UserRole newUserRole = optNewUserRole.get();
+
+    Set<UserRole> roles = user.getRoles();
+    roles.add(newUserRole);
+    user.setRoles(roles);
+
+    User savedUser = userRepository.save(user);
+
     return convertUserToUserDTO(savedUser);
   }
 }
