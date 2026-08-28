@@ -21,6 +21,7 @@ public class UserRestController {
 
   @GetMapping("/currentUser")
   public UserDTO currentUser(@AuthenticationPrincipal JwtUserDetails jwtUserDetails) {
+    log.debug("UserRestController::currentUser");
     return userService.getCurrentUser(jwtUserDetails);
   }
 }
