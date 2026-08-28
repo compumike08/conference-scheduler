@@ -102,6 +102,21 @@ public class UserService {
     }
 
     roles.add(optUserUserRole.get());
+
+    long userCount = userRepository.count();
+
+    // If this is the first user being created in the database, give it an ADMIN role
+    if (userCount == 0L) {
+      Optional<UserRole> optUserAdminRole = userRoleRepository.findByName(EUserRole.ROLE_ADMIN);
+
+      if (optUserAdminRole.isEmpty()) {
+        log.error("Unable to find user role with name of: {}", EUserRole.ROLE_ADMIN.name());
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG);
+      }
+
+      roles.add(optUserAdminRole.get());
+    }
+
     newUser.setRoles(roles);
 
     User savedNewUser = userRepository.save(newUser);
