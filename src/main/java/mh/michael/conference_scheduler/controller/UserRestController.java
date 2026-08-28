@@ -5,9 +5,7 @@ import mh.michael.conference_scheduler.dto.UserDTO;
 import mh.michael.conference_scheduler.security.JwtUserDetails;
 import mh.michael.conference_scheduler.service.UserService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
@@ -23,5 +21,11 @@ public class UserRestController {
   public UserDTO currentUser(@AuthenticationPrincipal JwtUserDetails jwtUserDetails) {
     log.debug("UserRestController::currentUser");
     return userService.getCurrentUser(jwtUserDetails);
+  }
+
+  @GetMapping("/userUuid/{userUuid}")
+  public UserDTO userUuid(@PathVariable String userUuid) {
+    log.debug("UserRestController::userUuid");
+    return userService.getUserByUuid(userUuid);
   }
 }

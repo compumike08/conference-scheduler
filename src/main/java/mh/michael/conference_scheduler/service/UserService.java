@@ -10,6 +10,7 @@ import mh.michael.conference_scheduler.repository.UserRepository;
 import mh.michael.conference_scheduler.repository.UserRoleRepository;
 import mh.michael.conference_scheduler.security.JwtUserDetails;
 import mh.michael.conference_scheduler.util.EmailValidationUtil;
+import mh.michael.conference_scheduler.util.UuidMethods;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -117,6 +118,24 @@ public class UserService {
     }
 
     User user = optUser.get();
+    return convertUserToUserDTO(user);
+  }
+
+  @Transactional
+  public UserDTO getUserByUuid(String userUuid) {
+    UUID uuid = UuidMethods.handleUuidFromStringError(
+      userUuid, "Invalid user UUID", HttpStatus.BAD_REQUEST
+    );
+
+    Optional<User> optUser = userRepository.findByUserUuid(uuid);
+
+    if (optUser.isEmpty()) {
+      log.error("Unable to find user with user UUID: {}", userUuid);
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+    }
+
+    User user = optUser.get();
+
     return convertUserToUserDTO(user);
   }
 
