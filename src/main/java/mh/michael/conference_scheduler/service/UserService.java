@@ -55,28 +55,28 @@ public class UserService {
     }
 
     if (email.isEmpty() || !EmailValidationUtil.emailPatternMatches(email)) {
-      log.debug("Email '" + email + "' is missing or invalid");
+      log.debug("Email '{}' is missing or invalid", email);
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is missing or invalid");
     }
 
     if (jwtUserDetails != null) {
       if (!jwtUserDetails.getUsername().equals(username) && userRepository.existsByUsername(username)) {
-        log.debug("Username '" + username + "' already exists");
+        log.debug("Username '{}' already exists", username);
         throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
       }
 
       if (!jwtUserDetails.getEmail().equals(email) && userRepository.existsByEmail(email)) {
-        log.debug("Email '" + email + "' already exists");
+        log.debug("Email '{}' already exists", email);
         throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
       }
     } else {
       if (userRepository.existsByUsername(username)) {
-        log.debug("Username '" + username + "' already exists");
+        log.debug("Username '{}' already exists", username);
         throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
       }
 
       if (userRepository.existsByEmail(email)) {
-        log.debug("Email '" + email + "' already exists");
+        log.debug("Email '{}' already exists", email);
         throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
       }
     }
@@ -97,7 +97,7 @@ public class UserService {
     Optional<UserRole> optUserUserRole = userRoleRepository.findByName(EUserRole.ROLE_USER);
 
     if (optUserUserRole.isEmpty()) {
-      log.error("Unable to find user role with name of: " + EUserRole.ROLE_USER.name());
+      log.error("Unable to find user role with name of: {}", EUserRole.ROLE_USER.name());
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG);
     }
 
@@ -113,7 +113,7 @@ public class UserService {
     Optional<User> optUser = userRepository.findByUsername(jwtUserDetails.getUsername());
 
     if (optUser.isEmpty()) {
-      log.error("Unable to find user with username of: " + jwtUserDetails.getUsername());
+      log.error("Unable to find user with username of: {}", jwtUserDetails.getUsername());
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG);
     }
 
