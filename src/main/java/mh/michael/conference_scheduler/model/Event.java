@@ -3,6 +3,7 @@ package mh.michael.conference_scheduler.model;
 import lombok.*;
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,5 +38,9 @@ public class Event {
     joinColumns = @JoinColumn(name = "event_id"),
     inverseJoinColumns = @JoinColumn(name = "member_id")
   )
-  private List<Member> members;
+  private List<Member> members = new ArrayList<>();
+
+  @OneToOne
+  @JoinColumn(nullable = false, name = "event_created_by_user_id")
+  private User createdByUser;
 }

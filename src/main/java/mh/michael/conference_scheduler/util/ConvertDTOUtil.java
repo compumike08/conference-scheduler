@@ -1,7 +1,7 @@
 package mh.michael.conference_scheduler.util;
 
-import mh.michael.conference_scheduler.dto.MemberDTO;
-import mh.michael.conference_scheduler.dto.UserDTO;
+import mh.michael.conference_scheduler.dto.*;
+import mh.michael.conference_scheduler.model.Event;
 import mh.michael.conference_scheduler.model.Member;
 import mh.michael.conference_scheduler.model.User;
 import mh.michael.conference_scheduler.model.UserRole;
@@ -26,6 +26,41 @@ public class ConvertDTOUtil {
       .firstName(member.getFirstName())
       .lastName(member.getLastName())
       .userUuid(member.getMemberUser().getUserUuid().toString())
+      .events(member.getEvents().stream()
+        .map(ConvertDTOUtil::convertEventToEventWithoutMembersDTO).collect(Collectors.toList()))
+      .build();
+  }
+
+  public static MemberWithoutEventsDTO convertMemberToMemberWithoutEventsDTO(Member member) {
+    return MemberWithoutEventsDTO.builder()
+      .memberUuid(member.getMemberUuid().toString())
+      .firstName(member.getFirstName())
+      .lastName(member.getLastName())
+      .userUuid(member.getMemberUser().getUserUuid().toString())
+      .build();
+  }
+
+  public static EventDTO convertEventToEventDTO(Event event) {
+    return EventDTO.builder()
+      .eventUuid(event.getEventUuid().toString())
+      .title(event.getTitle())
+      .description(event.getDescription())
+      .startDateTime(event.getStartDateTime())
+      .endDateTime(event.getEndDateTime())
+      .members(event.getMembers().stream()
+        .map(ConvertDTOUtil::convertMemberToMemberWithoutEventsDTO).collect(Collectors.toList()))
+      .createdByUser(convertUserToUserDTO(event.getCreatedByUser()))
+      .build();
+  }
+
+  public static EventWithoutMembersDTO convertEventToEventWithoutMembersDTO(Event event) {
+    return EventWithoutMembersDTO.builder()
+      .eventUuid(event.getEventUuid().toString())
+      .title(event.getTitle())
+      .description(event.getDescription())
+      .startDateTime(event.getStartDateTime())
+      .endDateTime(event.getEndDateTime())
+      .createdByUser(convertUserToUserDTO(event.getCreatedByUser()))
       .build();
   }
 }

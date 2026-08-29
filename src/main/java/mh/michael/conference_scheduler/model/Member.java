@@ -2,6 +2,7 @@ package mh.michael.conference_scheduler.model;
 
 import lombok.*;
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,5 +31,5 @@ public class Member {
   private User memberUser;
 
   @ManyToMany(mappedBy = "members")
-  private List<Event> events;
+  private List<Event> events = new ArrayList<>();
 }

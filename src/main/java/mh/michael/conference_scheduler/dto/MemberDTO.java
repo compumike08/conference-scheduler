@@ -1,6 +1,7 @@
 package mh.michael.conference_scheduler.dto;
 
 import lombok.*;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,4 +14,6 @@ public class MemberDTO {
   private String lastName;
 
   private String userUuid;
+
+  private List<EventWithoutMembersDTO> events;
 }
