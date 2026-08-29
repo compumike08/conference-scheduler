@@ -12,11 +12,15 @@ import mh.michael.conference_scheduler.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import javax.servlet.http.HttpServletRequest;
 
 @RestController
@@ -43,8 +47,19 @@ public class JwtAuthenticationRestController {
   @PostMapping(value = "/authenticate")
   public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtTokenRequest authenticationRequest) throws AuthenticationException {
     log.debug("JwtAuthenticationRestController::createAuthenticationToken");
-    Authentication authentication = authenticationManager.authenticate(
-      new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword()));
+    Authentication authentication;
+
+    try {
+      authentication = authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword()));
+    } catch (
+      AuthenticationCredentialsNotFoundException |
+      UsernameNotFoundException |
+      BadCredentialsException e
+    ) {
+      log.warn("AuthenticationException: ", e);
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication Failed");
+    }
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
 
