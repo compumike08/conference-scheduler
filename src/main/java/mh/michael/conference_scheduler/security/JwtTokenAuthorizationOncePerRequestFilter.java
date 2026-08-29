@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -59,13 +60,19 @@ public class JwtTokenAuthorizationOncePerRequestFilter extends OncePerRequestFil
     log.debug("JWT_TOKEN_USER_UUID_VALUE '{}'", uuid);
     if (uuid != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-      JwtUserDetails jwtUserDetails = this.databaseAuthUserDetailsService
-        .loadUserByUuid(UUID.fromString(uuid));
+      JwtUserDetails jwtUserDetails;
 
-      if (jwtTokenUtil.validateTokenForAuthentication(jwtToken, jwtUserDetails)) {
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(jwtUserDetails, null, jwtUserDetails.getAuthorities());
-        usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+      try {
+        jwtUserDetails = this.databaseAuthUserDetailsService
+          .loadUserByUuid(UUID.fromString(uuid));
+
+        if (jwtTokenUtil.validateTokenForAuthentication(jwtToken, jwtUserDetails)) {
+          UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(jwtUserDetails, null, jwtUserDetails.getAuthorities());
+          usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+          SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        }
+      } catch (UsernameNotFoundException e) {
+        log.error("User UUID from authentication token not found", e);
       }
     }
 
