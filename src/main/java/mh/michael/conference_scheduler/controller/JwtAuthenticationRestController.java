@@ -2,7 +2,7 @@ package mh.michael.conference_scheduler.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import mh.michael.conference_scheduler.dto.NewUserRequestDTO;
-import mh.michael.conference_scheduler.dto.UserDTO;
+import mh.michael.conference_scheduler.dto.UserWithoutMemberDTO;
 import mh.michael.conference_scheduler.exceptions.AuthenticationException;
 import mh.michael.conference_scheduler.security.JwtTokenRequest;
 import mh.michael.conference_scheduler.security.JwtTokenResponse;
@@ -83,7 +83,7 @@ public class JwtAuthenticationRestController {
   }
 
   @PostMapping(value = "/registerUser")
-  public UserDTO registerNewUser(@RequestBody NewUserRequestDTO newUserRequestDTO) {
+  public UserWithoutMemberDTO registerNewUser(@RequestBody NewUserRequestDTO newUserRequestDTO) {
     log.debug("JwtAuthenticationRestController::registerNewUser");
     return userService.createNewUser(newUserRequestDTO);
   }

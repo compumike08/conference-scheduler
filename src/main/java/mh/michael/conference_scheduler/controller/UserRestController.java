@@ -2,7 +2,7 @@ package mh.michael.conference_scheduler.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import mh.michael.conference_scheduler.dto.AddRoleToUserRequestDTO;
-import mh.michael.conference_scheduler.dto.UserDTO;
+import mh.michael.conference_scheduler.dto.UserWithoutMemberDTO;
 import mh.michael.conference_scheduler.security.JwtUserDetails;
 import mh.michael.conference_scheduler.service.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,20 +20,20 @@ public class UserRestController {
   }
 
   @GetMapping("/currentUser")
-  public UserDTO currentUser(@AuthenticationPrincipal JwtUserDetails jwtUserDetails) {
+  public UserWithoutMemberDTO currentUser(@AuthenticationPrincipal JwtUserDetails jwtUserDetails) {
     log.debug("UserRestController::currentUser");
     return userService.getCurrentUser(jwtUserDetails);
   }
 
   @GetMapping("/userUuid/{userUuid}")
-  public UserDTO userUuid(@PathVariable String userUuid) {
+  public UserWithoutMemberDTO userUuid(@PathVariable String userUuid) {
     log.debug("UserRestController::userUuid");
     return userService.getUserByUuid(userUuid);
   }
 
   @PutMapping("/addRole")
   @PreAuthorize("hasRole('ADMIN')")
-  public UserDTO addRoleToUser(@RequestBody AddRoleToUserRequestDTO addRoleToUserRequestDTO) {
+  public UserWithoutMemberDTO addRoleToUser(@RequestBody AddRoleToUserRequestDTO addRoleToUserRequestDTO) {
     log.debug("UserRestController::addRoleToUser");
     return userService.addRoleToUser(addRoleToUserRequestDTO);
   }

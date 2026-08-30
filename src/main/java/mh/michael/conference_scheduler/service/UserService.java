@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import mh.michael.conference_scheduler.constants.EUserRole;
 import mh.michael.conference_scheduler.dto.AddRoleToUserRequestDTO;
 import mh.michael.conference_scheduler.dto.NewUserRequestDTO;
-import mh.michael.conference_scheduler.dto.UserDTO;
+import mh.michael.conference_scheduler.dto.UserWithoutMemberDTO;
 import mh.michael.conference_scheduler.model.User;
 import mh.michael.conference_scheduler.model.UserRole;
 import mh.michael.conference_scheduler.repository.UserRepository;
@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static mh.michael.conference_scheduler.constants.Constants.INTERNAL_SERVER_ERROR_MSG;
-import static mh.michael.conference_scheduler.util.ConvertDTOUtil.convertUserToUserDTO;
+import static mh.michael.conference_scheduler.util.ConvertDTOUtil.convertUserToUserWithoutMemberDTO;
 
 @Service
 @Slf4j
@@ -84,7 +84,7 @@ public class UserService {
   }
 
   @Transactional
-  public UserDTO createNewUser(NewUserRequestDTO newUserRequestDTO) {
+  public UserWithoutMemberDTO createNewUser(NewUserRequestDTO newUserRequestDTO) {
     validateUsernameAndEmail(newUserRequestDTO.getUsername(), newUserRequestDTO.getEmail());
 
     User newUser = User.builder()
@@ -121,11 +121,11 @@ public class UserService {
     newUser.setRoles(roles);
 
     User savedNewUser = userRepository.save(newUser);
-    return convertUserToUserDTO(savedNewUser);
+    return convertUserToUserWithoutMemberDTO(savedNewUser);
   }
 
   @Transactional
-  public UserDTO getCurrentUser(JwtUserDetails jwtUserDetails) {
+  public UserWithoutMemberDTO getCurrentUser(JwtUserDetails jwtUserDetails) {
     Optional<User> optUser = userRepository.findByUsername(jwtUserDetails.getUsername());
 
     if (optUser.isEmpty()) {
@@ -134,11 +134,11 @@ public class UserService {
     }
 
     User user = optUser.get();
-    return convertUserToUserDTO(user);
+    return convertUserToUserWithoutMemberDTO(user);
   }
 
   @Transactional
-  public UserDTO getUserByUuid(String userUuid) {
+  public UserWithoutMemberDTO getUserByUuid(String userUuid) {
     UUID uuid = UuidMethods.handleUuidFromStringError(
       userUuid, "Invalid user UUID", HttpStatus.BAD_REQUEST
     );
@@ -152,11 +152,11 @@ public class UserService {
 
     User user = optUser.get();
 
-    return convertUserToUserDTO(user);
+    return convertUserToUserWithoutMemberDTO(user);
   }
 
   @Transactional
-  public UserDTO editUser(UserDTO requestDTO, JwtUserDetails jwtUserDetails) {
+  public UserWithoutMemberDTO editUser(UserWithoutMemberDTO requestDTO, JwtUserDetails jwtUserDetails) {
     validateUsernameAndEmail(requestDTO.getUsername(), requestDTO.getEmail(), jwtUserDetails);
 
     User user = userRepository.getOne(jwtUserDetails.getId());
@@ -165,11 +165,11 @@ public class UserService {
     user.setEmail(requestDTO.getEmail());
 
     User savedUser = userRepository.save(user);
-    return convertUserToUserDTO(savedUser);
+    return convertUserToUserWithoutMemberDTO(savedUser);
   }
 
   @Transactional
-  public UserDTO addRoleToUser(AddRoleToUserRequestDTO addRoleToUserRequestDTO) {
+  public UserWithoutMemberDTO addRoleToUser(AddRoleToUserRequestDTO addRoleToUserRequestDTO) {
     UUID uuid = UuidMethods.handleUuidFromStringError(
       addRoleToUserRequestDTO.getUserUuid(), "Invalid user UUID", HttpStatus.BAD_REQUEST
     );
@@ -208,6 +208,6 @@ public class UserService {
 
     User savedUser = userRepository.save(user);
 
-    return convertUserToUserDTO(savedUser);
+    return convertUserToUserWithoutMemberDTO(savedUser);
   }
 }
