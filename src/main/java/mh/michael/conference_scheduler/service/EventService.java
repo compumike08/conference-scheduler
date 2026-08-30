@@ -114,6 +114,53 @@ public class EventService {
   }
 
   @Transactional
+  public EventDTO removeMemberFromEvent(
+    JwtUserDetails jwtUserDetails,
+    String eventUuidStr
+  ) {
+    UUID eventUuid = UuidMethods.handleUuidFromStringError(
+      eventUuidStr,
+      "Event UUID is invalid",
+      HttpStatus.BAD_REQUEST
+    );
+
+    Optional<User> optUser = userRepository.findByUserUuid(jwtUserDetails.getUserUuid());
+
+    if (optUser.isEmpty()) {
+      log.error("User with UUID of {} not found in removeMemberFromEvent service method", jwtUserDetails.getUserUuid());
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG);
+    }
+
+    User user = optUser.get();
+
+    if (user.getMember() == null) {
+      log.warn("User {} with null member attempted to remove themself event {}", user.getUserUuid(), eventUuid);
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The current user does not have an associated member record to remove themselves from an event. Create a member record and try again.");
+    }
+
+    Member member = user.getMember();
+
+    Optional<Event> optEvent = eventRepository.findByEventUuid(eventUuid);
+
+    if (optEvent.isEmpty()) {
+      log.error("Event with UUID of {} not found in removeMemberFromEvent service method", eventUuid);
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Event not found");
+    }
+
+    Event event = optEvent.get();
+
+    if (!event.getMembers().contains(member)) {
+      log.error("Member uuid {} not found as member of event uuid {}", member.getMemberUuid().toString(), event.getEventUuid().toString());
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Member cannot be removed from this event, as they have not previously joined this event");
+    }
+
+    event.removeMemberFromEvent(member);
+
+    Event updatedEvent = eventRepository.save(event);
+    return ConvertDTOUtil.convertEventToEventDTO(updatedEvent);
+  }
+
+  @Transactional
   public EventDTO joinEvent(
     @AuthenticationPrincipal JwtUserDetails jwtUserDetails,
     String eventUuidStr

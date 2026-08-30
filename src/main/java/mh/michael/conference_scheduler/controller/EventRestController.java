@@ -36,6 +36,15 @@ public class EventRestController {
     return eventService.getAllEvents();
   }
 
+  @PutMapping("/removeMemberFromEvent/{eventUuid}")
+  public EventDTO removeMemberFromEvent(
+    @AuthenticationPrincipal JwtUserDetails jwtUserDetails,
+    @PathVariable String eventUuid
+  ) {
+    log.debug("EventRestController::removeMemberFromEvent");
+    return eventService.removeMemberFromEvent(jwtUserDetails, eventUuid);
+  }
+
   @PutMapping("/joinEvent/{eventUuid}")
   public EventDTO joinEvent(
     @AuthenticationPrincipal JwtUserDetails jwtUserDetails,

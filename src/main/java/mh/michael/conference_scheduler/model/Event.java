@@ -52,6 +52,11 @@ public class Event {
     member.getEvents().add(this);
   }
 
+  public void removeMemberFromEvent(Member member) {
+    this.members.remove(member);
+    member.getEvents().remove(this);
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
