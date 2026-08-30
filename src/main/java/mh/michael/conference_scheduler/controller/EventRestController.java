@@ -53,4 +53,11 @@ public class EventRestController {
     log.debug("EventRestController::joinEvent");
     return eventService.joinEvent(jwtUserDetails, eventUuid);
   }
+
+  @DeleteMapping("/deleteEvent/{eventUuid}")
+  @PreAuthorize("hasRole('ADMIN') or (hasRole('SCHEDULER') and @eventCreatorSecurity.isCreator(#eventUuid, authentication.principal))")
+  public EventDTO deleteEvent(@PathVariable String eventUuid) {
+    log.debug("EventRestController::deleteEvent");
+    return eventService.deleteEvent(eventUuid);
+  }
 }

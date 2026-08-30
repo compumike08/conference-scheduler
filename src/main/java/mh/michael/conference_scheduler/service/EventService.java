@@ -206,4 +206,26 @@ public class EventService {
     Event updatedEvent = eventRepository.save(event);
     return ConvertDTOUtil.convertEventToEventDTO(updatedEvent);
   }
+
+  @Transactional
+  public EventDTO deleteEvent(String eventUuidString) {
+    UUID eventUuid = UuidMethods.handleUuidFromStringError(
+      eventUuidString,
+      "Event UUID is invalid",
+      HttpStatus.BAD_REQUEST
+    );
+
+    Optional<Event> optEvent = eventRepository.findByEventUuid(eventUuid);
+
+    if (optEvent.isEmpty()) {
+      log.error("Event with UUID of {} not found in deleteEvent service method", eventUuid);
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found");
+    }
+
+    Event event = optEvent.get();
+
+    eventRepository.delete(event);
+
+    return ConvertDTOUtil.convertEventToEventDTO(event);
+  }
 }

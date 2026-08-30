@@ -32,6 +32,13 @@ public class Member {
   @Builder.Default
   private Set<Event> events = new HashSet<>();
 
+  @PreRemove
+  private void removeMemberFromEvents() {
+    for (Event event : this.events) {
+      event.getMembers().remove(this);
+    }
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
