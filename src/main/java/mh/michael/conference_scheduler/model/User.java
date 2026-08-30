@@ -32,6 +32,7 @@ public class User {
   @JoinTable(name = "user_user_roles",
     joinColumns = @JoinColumn(name = "user_id"),
     inverseJoinColumns = @JoinColumn(name = "role_id"))
+  @Builder.Default
   private Set<UserRole> roles = new HashSet<>();
 
   @OneToOne(mappedBy = "memberUser")
