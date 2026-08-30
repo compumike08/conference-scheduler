@@ -12,6 +12,7 @@ import java.time.Instant;
 public class NewEventRequestDTO {
   private String title;
   private String description;
+  private Long maxAttendees;
 
   @JsonFormat(shape = JsonFormat.Shape.NUMBER)
   private Instant startDateTime;

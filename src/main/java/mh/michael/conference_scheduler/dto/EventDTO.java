@@ -13,6 +13,7 @@ public class EventDTO {
   private String eventUuid;
   private String title;
   private String description;
+  private Long maxAttendees;
   private Instant startDateTime;
   private Instant endDateTime;
 

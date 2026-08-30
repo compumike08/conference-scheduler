@@ -43,6 +43,11 @@ public class EventService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Title is required");
     }
 
+    if (newEventRequestDTO.getMaxAttendees() == null || newEventRequestDTO.getMaxAttendees() == 0) {
+      log.error("maxAttendees is null or empty");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Max Attendees is required");
+    }
+
     if (newEventRequestDTO.getStartDateTime() == null) {
       log.error("startDateTime is null");
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start Date/Time is required");
@@ -97,6 +102,7 @@ public class EventService {
       .endDateTime(newEventRequestDTO.getEndDateTime())
       .title(newEventRequestDTO.getTitle())
       .description(newEventRequestDTO.getDescription())
+      .maxAttendees(newEventRequestDTO.getMaxAttendees())
       .build();
 
     Event savedEvent = eventRepository.save(newEvent);
@@ -199,6 +205,11 @@ public class EventService {
     if (event.getMembers().contains(member)) {
       log.error("Member uuid {} has already joined this event {}", member.getMemberUuid().toString(), event.getEventUuid().toString());
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Member cannot join this event, as they have already joined it");
+    }
+
+    if (event.getMembers().size() >= event.getMaxAttendees()) {
+      log.error("Maximum number of attendees has already been reached for this event uuid {}", eventUuid);
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Unable to join this event; the maximum number of attendees has already been reached");
     }
 
     event.addMemberToEvent(member);
