@@ -35,4 +35,13 @@ public class EventRestController {
     log.debug("EventRestController::getAllEvents");
     return eventService.getAllEvents();
   }
+
+  @PutMapping("/joinEvent/{eventUuid}")
+  public EventDTO joinEvent(
+    @AuthenticationPrincipal JwtUserDetails jwtUserDetails,
+    @PathVariable("eventUuid") String eventUuid
+  ) {
+    log.debug("EventRestController::joinEvent");
+    return eventService.joinEvent(jwtUserDetails, eventUuid);
+  }
 }

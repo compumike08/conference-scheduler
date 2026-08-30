@@ -15,5 +15,5 @@ public class EventWithoutMembersDTO {
   private Instant startDateTime;
   private Instant endDateTime;
 
-  private UserDTO createdByUser;
+  private UserWithoutMemberDTO createdByUser;
 }

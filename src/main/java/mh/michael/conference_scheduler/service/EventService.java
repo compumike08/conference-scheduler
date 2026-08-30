@@ -6,20 +6,20 @@ import lombok.extern.slf4j.Slf4j;
 import mh.michael.conference_scheduler.dto.EventDTO;
 import mh.michael.conference_scheduler.dto.NewEventRequestDTO;
 import mh.michael.conference_scheduler.model.Event;
+import mh.michael.conference_scheduler.model.Member;
 import mh.michael.conference_scheduler.model.User;
 import mh.michael.conference_scheduler.repository.EventRepository;
 import mh.michael.conference_scheduler.repository.UserRepository;
 import mh.michael.conference_scheduler.security.JwtUserDetails;
 import mh.michael.conference_scheduler.util.ConvertDTOUtil;
+import mh.michael.conference_scheduler.util.UuidMethods;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -97,7 +97,6 @@ public class EventService {
       .endDateTime(newEventRequestDTO.getEndDateTime())
       .title(newEventRequestDTO.getTitle())
       .description(newEventRequestDTO.getDescription())
-      .members(new ArrayList<>())
       .build();
 
     Event savedEvent = eventRepository.save(newEvent);
@@ -112,5 +111,47 @@ public class EventService {
     return allEvents.stream()
       .map(ConvertDTOUtil::convertEventToEventDTO)
       .collect(Collectors.toList());
+  }
+
+  @Transactional
+  public EventDTO joinEvent(
+    @AuthenticationPrincipal JwtUserDetails jwtUserDetails,
+    String eventUuidStr
+  ) {
+    UUID eventUuid = UuidMethods.handleUuidFromStringError(
+      eventUuidStr,
+      "Event UUID is invalid",
+      HttpStatus.BAD_REQUEST
+    );
+
+    Optional<User> optUser = userRepository.findByUserUuid(jwtUserDetails.getUserUuid());
+
+    if (optUser.isEmpty()) {
+      log.error("User with UUID of {} not found in joinEvent service method", jwtUserDetails.getUserUuid());
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG);
+    }
+
+    User user = optUser.get();
+
+    if (user.getMember() == null) {
+      log.warn("User {} with null member attempted to join event {}", user.getUserUuid(), eventUuid);
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The current user does not have an associated member record to join an event. Create a member record and try again.");
+    }
+
+    Member member = user.getMember();
+
+    Optional<Event> optEvent = eventRepository.findByEventUuid(eventUuid);
+
+    if (optEvent.isEmpty()) {
+      log.error("Event with UUID of {} not found in joinEvent service method", eventUuid);
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Event not found");
+    }
+
+    Event event = optEvent.get();
+
+    event.addMemberToEvent(member);
+
+    Event updatedEvent = eventRepository.save(event);
+    return ConvertDTOUtil.convertEventToEventDTO(updatedEvent);
   }
 }

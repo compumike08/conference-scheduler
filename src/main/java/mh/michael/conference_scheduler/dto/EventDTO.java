@@ -18,5 +18,5 @@ public class EventDTO {
 
   List<MemberWithoutEventsDTO> members;
 
-  UserDTO createdByUser;
+  UserWithoutMemberDTO createdByUser;
 }

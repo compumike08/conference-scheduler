@@ -3,9 +3,7 @@ package mh.michael.conference_scheduler.model;
 import lombok.*;
 import javax.persistence.*;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity(name = "event")
 @AllArgsConstructor
@@ -36,11 +34,35 @@ public class Event {
   @JoinTable(
     name = "event_member",
     joinColumns = @JoinColumn(name = "event_id"),
-    inverseJoinColumns = @JoinColumn(name = "member_id")
+    inverseJoinColumns = @JoinColumn(name = "member_id"),
+    uniqueConstraints = @UniqueConstraint(
+      name = "UC_event_member_unique",
+      columnNames = {"event_id", "member_id"}
+    )
   )
-  private List<Member> members = new ArrayList<>();
+  @Builder.Default
+  private Set<Member> members = new HashSet<>();
 
   @OneToOne
   @JoinColumn(nullable = false, name = "event_created_by_user_id")
   private User createdByUser;
+
+  public void addMemberToEvent(Member member) {
+    this.members.add(member);
+    member.getEvents().add(this);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Event event = (Event) o;
+    return eventUuid.equals(event.eventUuid);
+  }
+
+  @Override
+  public int hashCode() {
+    return eventUuid != null ? eventUuid.hashCode() : 0;
+  }
 }

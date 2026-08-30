@@ -20,6 +20,16 @@ public class ConvertDTOUtil {
       .build();
   }
 
+  public static UserWithoutMemberDTO convertUserToUserWithoutMemberDTO(User user) {
+    return UserWithoutMemberDTO.builder()
+      .email(user.getEmail())
+      .roles(user.getRoles().parallelStream().map(UserRole::getName).collect(Collectors.toSet()))
+      .username(user.getUsername())
+      .userUuid(user.getUserUuid().toString())
+      .memberUuid(user.getMember() == null ? null : user.getMember().getMemberUuid().toString())
+      .build();
+  }
+
   public static MemberDTO convertMemberToMemberDTO(Member member) {
     return MemberDTO.builder()
       .memberUuid(member.getMemberUuid().toString())
@@ -49,7 +59,7 @@ public class ConvertDTOUtil {
       .endDateTime(event.getEndDateTime())
       .members(event.getMembers().stream()
         .map(ConvertDTOUtil::convertMemberToMemberWithoutEventsDTO).collect(Collectors.toList()))
-      .createdByUser(convertUserToUserDTO(event.getCreatedByUser()))
+      .createdByUser(convertUserToUserWithoutMemberDTO(event.getCreatedByUser()))
       .build();
   }
 
@@ -60,7 +70,7 @@ public class ConvertDTOUtil {
       .description(event.getDescription())
       .startDateTime(event.getStartDateTime())
       .endDateTime(event.getEndDateTime())
-      .createdByUser(convertUserToUserDTO(event.getCreatedByUser()))
+      .createdByUser(convertUserToUserWithoutMemberDTO(event.getCreatedByUser()))
       .build();
   }
 }

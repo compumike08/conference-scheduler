@@ -2,9 +2,7 @@ package mh.michael.conference_scheduler.model;
 
 import lombok.*;
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity(name = "member")
 @AllArgsConstructor
@@ -31,5 +29,20 @@ public class Member {
   private User memberUser;
 
   @ManyToMany(mappedBy = "members")
-  private List<Event> events = new ArrayList<>();
+  @Builder.Default
+  private Set<Event> events = new HashSet<>();
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Member member = (Member) o;
+    return memberUuid.equals(member.memberUuid);
+  }
+
+  @Override
+  public int hashCode() {
+    return memberUuid != null ? memberUuid.hashCode() : 0;
+  }
 }
