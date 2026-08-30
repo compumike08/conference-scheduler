@@ -149,6 +149,11 @@ public class EventService {
 
     Event event = optEvent.get();
 
+    if (event.getMembers().contains(member)) {
+      log.error("Member uuid {} has already joined this event {}", member.getMemberUuid().toString(), event.getEventUuid().toString());
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Member cannot join this event, as they have already joined it");
+    }
+
     event.addMemberToEvent(member);
 
     Event updatedEvent = eventRepository.save(event);
