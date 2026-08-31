@@ -1,6 +1,9 @@
 package mh.michael.conference_scheduler.dto;
 
+import static mh.michael.conference_scheduler.constants.Constants.EMAIL_VALIDATION_REGEX;
+
 import lombok.*;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
@@ -16,6 +19,7 @@ public class NewUserRequestDTO {
 
   @NotBlank(message = "Email is required")
   @Size(min = 2, max = 100, message = "Email must be between 2 and 100 characters long")
+  @Email(message = "Email is not a valid email address", regexp = EMAIL_VALIDATION_REGEX)
   private String email;
 
   @NotBlank(message = "Password is required")
