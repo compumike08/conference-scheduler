@@ -46,16 +46,6 @@ public class EventService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "End Date/Time cannot be equal to or before Start Date/Time");
     }
 
-    boolean isConflictingEvent = eventRepository.existsOverlapping(
-      startDateTime,
-      endDateTime
-    );
-
-    if (isConflictingEvent) {
-      log.warn("Conflicting event when trying to add event");
-      throw new ResponseStatusException(HttpStatus.CONFLICT, "An existing event conflicts with the start and end date/time");
-    }
-
     Optional<User> optCreatedByUser = userRepository.findByUserUuid(jwtUserDetails.getUserUuid());
 
     if (optCreatedByUser.isEmpty()) {
@@ -187,6 +177,17 @@ public class EventService {
     if (event.getMembers().size() >= event.getMaxAttendees()) {
       log.error("Maximum number of attendees has already been reached for this event uuid {}", eventUuid);
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Unable to join this event; the maximum number of attendees has already been reached");
+    }
+
+    boolean isConflictingEvent = eventRepository.existsOverlappingForMember(
+      event.getStartDateTime(),
+      event.getEndDateTime(),
+      member
+    );
+
+    if (isConflictingEvent) {
+      log.warn("Conflicting event when trying to add event");
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "This member has an existing event which conflicts with this event's start and end date/time");
     }
 
     event.addMemberToEvent(member);
