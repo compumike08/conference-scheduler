@@ -38,47 +38,17 @@ public class EventService {
     JwtUserDetails jwtUserDetails,
     NewEventRequestDTO newEventRequestDTO
   ) {
-    if (newEventRequestDTO.getTitle() == null || newEventRequestDTO.getTitle().isEmpty()) {
-      log.error("title is null or empty");
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Title is required");
-    }
+    Instant startDateTime = Instant.parse(newEventRequestDTO.getStartDateTime());
+    Instant endDateTime = Instant.parse(newEventRequestDTO.getEndDateTime());
 
-    if (newEventRequestDTO.getMaxAttendees() == null || newEventRequestDTO.getMaxAttendees() == 0) {
-      log.error("maxAttendees is null or empty");
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Max Attendees is required");
-    }
-
-    if (newEventRequestDTO.getStartDateTime() == null) {
-      log.error("startDateTime is null");
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start Date/Time is required");
-    }
-
-    if (newEventRequestDTO.getEndDateTime() == null) {
-      log.error("endDateTime is null");
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "End Date/Time is required");
-    }
-
-    if (
-      newEventRequestDTO.getEndDateTime().isBefore(newEventRequestDTO.getStartDateTime()) ||
-        newEventRequestDTO.getEndDateTime().equals(newEventRequestDTO.getStartDateTime())
-    ) {
+    if (endDateTime.isBefore(startDateTime) || endDateTime.equals(startDateTime)) {
       log.error("endDateTime is before or equal to startDateTime");
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "End Date/Time cannot be equal to or before Start Date/Time");
     }
 
-    Instant currentDateTime = Instant.now();
-
-    if (
-      newEventRequestDTO.getStartDateTime().isBefore(currentDateTime) ||
-        newEventRequestDTO.getStartDateTime().equals(currentDateTime)
-    ) {
-      log.error("startDateTime is before or equal to currentDateTime");
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start Date/Time cannot be equal to or before the current date and time");
-    }
-
     boolean isConflictingEvent = eventRepository.existsOverlapping(
-      newEventRequestDTO.getStartDateTime(),
-      newEventRequestDTO.getEndDateTime()
+      startDateTime,
+      endDateTime
     );
 
     if (isConflictingEvent) {
@@ -95,11 +65,18 @@ public class EventService {
 
     User createdByUser = optCreatedByUser.get();
 
+    if (newEventRequestDTO.getDescription() != null && !newEventRequestDTO.getDescription().isEmpty()) {
+      if (newEventRequestDTO.getDescription().length() > 2000) {
+        log.warn("Description is greater than 2000 characters long: {}", newEventRequestDTO.getDescription());
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Description cannot be greater than 2000 characters long");
+      }
+    }
+
     Event newEvent = Event.builder()
       .eventUuid(UUID.randomUUID())
       .createdByUser(createdByUser)
-      .startDateTime(newEventRequestDTO.getStartDateTime())
-      .endDateTime(newEventRequestDTO.getEndDateTime())
+      .startDateTime(startDateTime)
+      .endDateTime(endDateTime)
       .title(newEventRequestDTO.getTitle())
       .description(newEventRequestDTO.getDescription())
       .maxAttendees(newEventRequestDTO.getMaxAttendees())

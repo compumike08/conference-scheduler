@@ -8,6 +8,7 @@ import mh.michael.conference_scheduler.service.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/user")
@@ -33,7 +34,7 @@ public class UserRestController {
 
   @PutMapping("/addRole")
   @PreAuthorize("hasRole('ADMIN')")
-  public UserWithoutMemberDTO addRoleToUser(@RequestBody AddRoleToUserRequestDTO addRoleToUserRequestDTO) {
+  public UserWithoutMemberDTO addRoleToUser(@Valid @RequestBody AddRoleToUserRequestDTO addRoleToUserRequestDTO) {
     log.debug("UserRestController::addRoleToUser");
     return userService.addRoleToUser(addRoleToUserRequestDTO);
   }

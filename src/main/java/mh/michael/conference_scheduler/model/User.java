@@ -19,13 +19,13 @@ public class User {
   @Column(unique = true, nullable = false)
   private UUID userUuid;
 
-  @Column(unique = true, nullable = false)
+  @Column(unique = true, nullable = false, length = 50)
   private String username;
 
-  @Column(nullable = false)
+  @Column(nullable = false, length = 100)
   private String email;
 
-  @Column(nullable = false)
+  @Column(nullable = false, length = 50)
   private String password;
 
   @ManyToMany(fetch = FetchType.EAGER)

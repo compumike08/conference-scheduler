@@ -18,10 +18,10 @@ public class Member {
   @Column(unique = true, nullable = false)
   private UUID memberUuid;
 
-  @Column(nullable = false)
+  @Column(nullable = false, length = 100)
   private String lastName;
 
-  @Column(nullable = false)
+  @Column(nullable = false, length = 100)
   private String firstName;
 
   @OneToOne

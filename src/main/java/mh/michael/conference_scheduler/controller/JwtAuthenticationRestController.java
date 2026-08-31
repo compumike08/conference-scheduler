@@ -22,6 +22,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 @RestController
 @CrossOrigin(origins={ "http://localhost:3000", "http://localhost:8080" })
@@ -45,7 +46,7 @@ public class JwtAuthenticationRestController {
   }
 
   @PostMapping(value = "/authenticate")
-  public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtTokenRequest authenticationRequest) throws AuthenticationException {
+  public ResponseEntity<?> createAuthenticationToken(@Valid @RequestBody JwtTokenRequest authenticationRequest) throws AuthenticationException {
     log.debug("JwtAuthenticationRestController::createAuthenticationToken");
     Authentication authentication;
 
@@ -83,7 +84,7 @@ public class JwtAuthenticationRestController {
   }
 
   @PostMapping(value = "/registerUser")
-  public UserWithoutMemberDTO registerNewUser(@RequestBody NewUserRequestDTO newUserRequestDTO) {
+  public UserWithoutMemberDTO registerNewUser(@Valid @RequestBody NewUserRequestDTO newUserRequestDTO) {
     log.debug("JwtAuthenticationRestController::registerNewUser");
     return userService.createNewUser(newUserRequestDTO);
   }

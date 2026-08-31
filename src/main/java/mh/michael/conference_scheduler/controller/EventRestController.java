@@ -8,6 +8,7 @@ import mh.michael.conference_scheduler.service.EventService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -24,7 +25,7 @@ public class EventRestController {
   @PreAuthorize("hasRole('ADMIN') or hasRole('SCHEDULER')")
   public EventDTO createEvent(
     @AuthenticationPrincipal JwtUserDetails jwtUserDetails,
-    @RequestBody NewEventRequestDTO newEventRequestDTO
+    @Valid @RequestBody NewEventRequestDTO newEventRequestDTO
   ) {
     log.debug("EventRestController::createEvent");
     return eventService.createEvent(jwtUserDetails, newEventRequestDTO);

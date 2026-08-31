@@ -1,6 +1,8 @@
 spring:
   profiles:
     active: '@spring.profiles.active@'
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
 server:
   error:
     include-message: always

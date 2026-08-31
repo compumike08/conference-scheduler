@@ -10,7 +10,6 @@ import mh.michael.conference_scheduler.model.UserRole;
 import mh.michael.conference_scheduler.repository.UserRepository;
 import mh.michael.conference_scheduler.repository.UserRoleRepository;
 import mh.michael.conference_scheduler.security.JwtUserDetails;
-import mh.michael.conference_scheduler.util.EmailValidationUtil;
 import mh.michael.conference_scheduler.util.UuidMethods;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,18 +47,6 @@ public class UserService {
   }
 
   private void validateUsernameAndEmail(String username, String email, JwtUserDetails jwtUserDetails) {
-    // Validate new username is between 3 and 25 characters long
-    if (username.length() < 3 || username.length() > 25) {
-      String errMsg = "Username must be at between 3 and 25 characters long";
-      log.debug(errMsg);
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errMsg);
-    }
-
-    if (email.isEmpty() || !EmailValidationUtil.emailPatternMatches(email)) {
-      log.debug("Email '{}' is missing or invalid", email);
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is missing or invalid");
-    }
-
     if (jwtUserDetails != null) {
       if (!jwtUserDetails.getUsername().equals(username) && userRepository.existsByUsername(username)) {
         log.debug("Username '{}' already exists", username);
@@ -170,20 +157,9 @@ public class UserService {
 
   @Transactional
   public UserWithoutMemberDTO addRoleToUser(AddRoleToUserRequestDTO addRoleToUserRequestDTO) {
-    UUID uuid = UuidMethods.handleUuidFromStringError(
-      addRoleToUserRequestDTO.getUserUuid(), "Invalid user UUID", HttpStatus.BAD_REQUEST
-    );
-
+    UUID uuid = UUID.fromString(addRoleToUserRequestDTO.getUserUuid());
     String newUserRoleString = addRoleToUserRequestDTO.getNewRole();
-
-    EUserRole newUserRoleEnum;
-
-    try {
-      newUserRoleEnum = EUserRole.valueOf(newUserRoleString);
-    } catch (IllegalArgumentException e) {
-      log.error("Invalid user role: {}", newUserRoleString, e);
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid role");
-    }
+    EUserRole newUserRoleEnum = EUserRole.valueOf(newUserRoleString);
 
     Optional<User> optUser = userRepository.findByUserUuid(uuid);
 

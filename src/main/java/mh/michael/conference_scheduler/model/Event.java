@@ -19,12 +19,13 @@ public class Event {
   @Column(unique = true, nullable = false)
   private UUID eventUuid;
 
-  @Column(nullable = false)
+  @Column(nullable = false,  length = 100)
   private String title;
 
   @Column(nullable = false)
   private Long maxAttendees;
 
+  @Column(length = 2000)
   private String description;
 
   @Column(nullable = false)
