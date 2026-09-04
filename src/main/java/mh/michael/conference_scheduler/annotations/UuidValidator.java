@@ -1,7 +1,7 @@
 package mh.michael.conference_scheduler.annotations;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import java.util.UUID;
 
 public class UuidValidator implements ConstraintValidator<ValidUuid, String> {

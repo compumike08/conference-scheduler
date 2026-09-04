@@ -1,7 +1,7 @@
 package mh.michael.conference_scheduler.model;
 
+import jakarta.persistence.*;
 import lombok.*;
-import javax.persistence.*;
 import java.time.Instant;
 import java.util.*;
 

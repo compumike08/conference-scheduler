@@ -1,9 +1,12 @@
 package mh.michael.conference_scheduler.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import mh.michael.conference_scheduler.annotations.IsInstantInFuture;
 import mh.michael.conference_scheduler.annotations.IsValidInstant;
-import javax.validation.constraints.*;
 
 @AllArgsConstructor
 @NoArgsConstructor

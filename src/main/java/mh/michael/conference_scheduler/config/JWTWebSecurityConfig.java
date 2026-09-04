@@ -1,40 +1,46 @@
 package mh.michael.conference_scheduler.config;
 
-import mh.michael.conference_scheduler.security.JwtTokenAuthorizationOncePerRequestFilter;
-import mh.michael.conference_scheduler.security.JwtUnAuthorizedResponseAuthenticationEntryPoint;
+import mh.michael.conference_scheduler.security.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.security.autoconfigure.web.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-public class JWTWebSecurityConfig extends WebSecurityConfigurerAdapter {
-  private final JwtUnAuthorizedResponseAuthenticationEntryPoint jwtUnAuthorizedResponseAuthenticationEntryPoint;
+@EnableMethodSecurity
+public class JWTWebSecurityConfig {
   private final UserDetailsService databaseAuthUserDetailsService;
-  private final JwtTokenAuthorizationOncePerRequestFilter jwtAuthenticationTokenFilter;
+  private final TokenService tokenService;
+  private final JwtToAppUserAuthenticationConverter jwtToAppUserAuthenticationConverter;
 
   public JWTWebSecurityConfig(
-    JwtUnAuthorizedResponseAuthenticationEntryPoint jwtUnAuthorizedResponseAuthenticationEntryPoint,
     UserDetailsService databaseAuthUserDetailsService,
-    JwtTokenAuthorizationOncePerRequestFilter jwtAuthenticationTokenFilter
+    TokenService tokenService,
+    JwtToAppUserAuthenticationConverter jwtToAppUserAuthenticationConverter
   ) {
-    this.jwtUnAuthorizedResponseAuthenticationEntryPoint = jwtUnAuthorizedResponseAuthenticationEntryPoint;
     this.databaseAuthUserDetailsService = databaseAuthUserDetailsService;
-    this.jwtAuthenticationTokenFilter = jwtAuthenticationTokenFilter;
+    this.tokenService = tokenService;
+    this.jwtToAppUserAuthenticationConverter = jwtToAppUserAuthenticationConverter;
   }
 
   @Autowired
@@ -44,9 +50,51 @@ public class JWTWebSecurityConfig extends WebSecurityConfigurerAdapter {
   }
 
   @Bean
-  @Override
-  public AuthenticationManager authenticationManagerBean() throws Exception {
-    return super.authenticationManagerBean();
+  public SecurityFilterChain filterChain(HttpSecurity http, NimbusJwtDecoder jwtDecoder) throws Exception {
+    // Beyond signature verification, require the token to have been issued by
+    // us (issuer) and minted for this API (audience) before it's accepted.
+    jwtDecoder.setJwtValidator(jwtTokenValidator());
+
+    http
+      // Stateless bearer-token API (no cookies/session to forge), so CSRF
+      // protection is disabled outright rather than per-path.
+      .csrf(AbstractHttpConfigurer::disable)
+      .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+      .authorizeHttpRequests(auth -> auth
+        .requestMatchers(
+          "/authenticate",
+          "/registerUser",
+          "/sendForgotPasswordEmail",
+          "/resetPassword",
+          "/favicon.ico",
+          "/static/**"
+        ).permitAll()
+        .requestMatchers(PathRequest.toH2Console()).permitAll()
+        .requestMatchers("/error").anonymous()
+        .anyRequest().authenticated())
+      .oauth2ResourceServer(oauth2 -> oauth2
+        .jwt(jwt -> jwt
+          .decoder(jwtDecoder)
+          .jwtAuthenticationConverter(jwtToAppUserAuthenticationConverter)))
+      // H2 console renders inside an iframe; the default X-Frame-Options: DENY
+      // would otherwise block it even though the path itself is permitted above.
+      .headers(headers -> headers
+        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
+    return http.build();
+  }
+
+  /**
+   * Combines Spring Security's default validators (signature is already checked
+   * by the decoder itself; this adds expiry/not-before timestamp checks plus an
+   * issuer check against jwt.issuer) with a custom audience check against
+   * jwt.audience. A token failing any of these is rejected as invalid, resulting
+   * in a 401 regardless of whether its signature was valid.
+   */
+  private OAuth2TokenValidator<Jwt> jwtTokenValidator() {
+    OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(tokenService.getIssuer());
+    OAuth2TokenValidator<Jwt> withAudience = new AudienceValidator(tokenService.getAuthAud());
+    OAuth2TokenValidator<Jwt> withUuidSubject = new SubjectIsUuidValidator();
+    return new DelegatingOAuth2TokenValidator<>(withIssuer, withAudience, withUuidSubject);
   }
 
   @Bean
@@ -54,64 +102,11 @@ public class JWTWebSecurityConfig extends WebSecurityConfigurerAdapter {
     return new BCryptPasswordEncoder();
   }
 
-  @Override
-  protected void configure(HttpSecurity httpSecurity) throws Exception {
-    httpSecurity
-      .httpBasic().disable()
-      .cors().and().csrf().disable()
-      .exceptionHandling().authenticationEntryPoint(jwtUnAuthorizedResponseAuthenticationEntryPoint).and()
-      .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-      .authorizeRequests()
-      .antMatchers("/error").anonymous()
-      .anyRequest().authenticated();
-
-    httpSecurity
-      .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
-
-    httpSecurity
-      .headers()
-      .frameOptions().sameOrigin()  //H2 Console Needs this setting
-      .cacheControl(); //disable caching
-  }
-
-  @Override
-  public void configure(WebSecurity webSecurity) throws Exception {
-    webSecurity
-      .ignoring()
-      .antMatchers(
-        HttpMethod.POST,
-        "/authenticate"
-      )
-      .antMatchers(
-        HttpMethod.POST,
-        "/registerUser"
-      )
-      .antMatchers(
-        HttpMethod.POST,
-        "/sendForgotPasswordEmail"
-      )
-      .antMatchers(
-        HttpMethod.POST,
-        "/resetPassword"
-      )
-      .antMatchers(HttpMethod.OPTIONS, "/**")
-      .and()
-      .ignoring()
-      .antMatchers(
-        HttpMethod.GET,
-        "/favicon.ico"
-      )
-      .and()
-      .ignoring()
-      .antMatchers(
-        HttpMethod.GET,
-        "/"
-      )
-      .and()
-      .ignoring()
-      .antMatchers("/static/**")
-      .and()
-      .ignoring()
-      .antMatchers("/h2-console/**/**");//Should not be in Production!
+  @Bean
+  public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
+                                                     PasswordEncoder passwordEncoder) {
+    DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+    provider.setPasswordEncoder(passwordEncoder);
+    return new ProviderManager(provider);
   }
 }

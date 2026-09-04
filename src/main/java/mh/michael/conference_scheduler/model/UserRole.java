@@ -1,9 +1,8 @@
 package mh.michael.conference_scheduler.model;
 
+import jakarta.persistence.*;
 import lombok.*;
 import mh.michael.conference_scheduler.constants.EUserRole;
-
-import javax.persistence.*;
 
 @Entity(name = "user_role")
 @AllArgsConstructor

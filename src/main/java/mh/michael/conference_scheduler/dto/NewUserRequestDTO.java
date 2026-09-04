@@ -2,10 +2,10 @@ package mh.michael.conference_scheduler.dto;
 
 import static mh.michael.conference_scheduler.constants.Constants.EMAIL_VALIDATION_REGEX;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 
 @AllArgsConstructor
 @NoArgsConstructor

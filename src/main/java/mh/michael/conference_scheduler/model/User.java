@@ -1,8 +1,7 @@
 package mh.michael.conference_scheduler.model;
 
+import jakarta.persistence.*;
 import lombok.*;
-
-import javax.persistence.*;
 import java.util.*;
 
 @Entity(name = "user_record")
@@ -25,7 +24,7 @@ public class User {
   @Column(nullable = false, length = 100)
   private String email;
 
-  @Column(nullable = false, length = 50)
+  @Column(nullable = false, length = 200)
   private String password;
 
   @ManyToMany(fetch = FetchType.EAGER)

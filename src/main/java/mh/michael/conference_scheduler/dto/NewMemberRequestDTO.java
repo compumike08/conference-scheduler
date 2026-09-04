@@ -1,8 +1,8 @@
 package mh.michael.conference_scheduler.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 
 @AllArgsConstructor
 @NoArgsConstructor

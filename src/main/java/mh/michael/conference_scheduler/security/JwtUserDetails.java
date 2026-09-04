@@ -1,7 +1,9 @@
 package mh.michael.conference_scheduler.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
 import mh.michael.conference_scheduler.model.User;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,8 +19,10 @@ public class JwtUserDetails implements UserDetails {
   private static final long serialVersionUID = -8535605411284956079L;
 
   private final Long id;
+  @Getter
   private final UUID userUuid;
   private final String username;
+  @Getter
   private final String email;
   private final String password;
   private final Collection<? extends GrantedAuthority> authorities;
@@ -52,14 +56,11 @@ public class JwtUserDetails implements UserDetails {
     return id;
   }
 
-  public UUID getUserUuid() { return userUuid; }
-
   @Override
+  @NullMarked
   public String getUsername() {
     return username;
   }
-
-  public String getEmail() { return email; }
 
   @JsonIgnore
   @Override
@@ -86,12 +87,8 @@ public class JwtUserDetails implements UserDetails {
   }
 
   @Override
+  @NullMarked
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return authorities;
-  }
-
-  @Override
-  public boolean isEnabled() {
-    return true;
   }
 }

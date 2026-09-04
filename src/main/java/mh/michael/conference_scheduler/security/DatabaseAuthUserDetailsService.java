@@ -3,6 +3,7 @@ package mh.michael.conference_scheduler.security;
 import lombok.extern.slf4j.Slf4j;
 import mh.michael.conference_scheduler.model.User;
 import mh.michael.conference_scheduler.repository.UserRepository;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,6 +20,7 @@ public class DatabaseAuthUserDetailsService implements UserDetailsService {
   }
 
   @Override
+  @NullMarked
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     User user = userRepository.findByUsername(username)
       .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));

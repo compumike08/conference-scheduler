@@ -1,10 +1,10 @@
 package mh.michael.conference_scheduler.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import mh.michael.conference_scheduler.annotations.ValidUuid;
 import mh.michael.conference_scheduler.annotations.ValueOfEnum;
 import mh.michael.conference_scheduler.constants.EUserRole;
-import javax.validation.constraints.NotBlank;
 
 @AllArgsConstructor
 @NoArgsConstructor
