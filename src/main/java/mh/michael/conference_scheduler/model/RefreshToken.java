@@ -54,6 +54,15 @@ public class RefreshToken {
     @Builder.Default
     private Instant createdAt = Instant.now();
 
+  /** When this token was revoked. Null until revoke() is called. */
+    private Instant revokedAt;
+
     /** Id of the token this one was rotated into, once used. Null until then. */
     private UUID replacedByTokenId;
+
+    /** Marks this token revoked/used, recording when - use this instead of setRevoked(true) directly, so revokedAt is never left out of sync. */
+    public void revoke() {
+      this.isRevoked = true;
+      this.revokedAt = Instant.now();
+    }
 }

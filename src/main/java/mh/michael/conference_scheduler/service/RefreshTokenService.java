@@ -81,6 +81,7 @@ public class RefreshTokenService {
         refreshTokenRepository.save(replacement);
 
         existing.setIsRevoked(true);
+        existing.setRevokedAt(Instant.now());
         existing.setReplacedByTokenId(replacement.getId());
         refreshTokenRepository.save(existing);
 
@@ -94,6 +95,7 @@ public class RefreshTokenService {
     public void revoke(String rawToken) {
         refreshTokenRepository.findByTokenHash(hash(rawToken)).ifPresent(token -> {
             token.setIsRevoked(true);
+            token.setRevokedAt(Instant.now());
             refreshTokenRepository.save(token);
         });
     }
@@ -101,7 +103,10 @@ public class RefreshTokenService {
     /** Revokes every active refresh token for a user - e.g. "log out everywhere" or a security response. */
     public void revokeAllForUser(UUID userId) {
         List<RefreshToken> active = refreshTokenRepository.findAllByUserIdAndIsRevokedFalse(userId);
-        active.forEach(token -> token.setIsRevoked(true));
+        active.forEach(token -> {
+          token.setIsRevoked(true);
+          token.setRevokedAt(Instant.now());
+        });
         refreshTokenRepository.saveAll(active);
     }
 
