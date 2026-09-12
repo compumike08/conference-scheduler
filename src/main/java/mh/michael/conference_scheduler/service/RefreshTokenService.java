@@ -28,10 +28,10 @@ public class RefreshTokenService {
 
     public RefreshTokenService(
             RefreshTokenRepository refreshTokenRepository,
-            @Value("${jwt.refresh-token.expiration-days:30}") long expirationDays
+            @Value("${jwt.refresh-token.expiration-hours:1}") long expirationHours
     ) {
         this.refreshTokenRepository = refreshTokenRepository;
-        this.refreshTokenTtl = Duration.ofDays(expirationDays);
+        this.refreshTokenTtl = Duration.ofHours(expirationHours);
     }
 
     /**

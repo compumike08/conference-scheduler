@@ -15,7 +15,7 @@ jwt:
   issuer: conference-scheduler
   expiration-minutes: 15
   refresh-token:
-    expiration-days: 1
+    expiration-hours: 3
 
 ---
 spring:
