@@ -3,21 +3,20 @@ package mh.michael.conference_scheduler.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import mh.michael.conference_scheduler.dto.NewUserRequestDTO;
+import mh.michael.conference_scheduler.dto.RefreshTokenRequestDTO;
+import mh.michael.conference_scheduler.dto.TokenPairResponseDTO;
 import mh.michael.conference_scheduler.dto.UserWithoutMemberDTO;
 import mh.michael.conference_scheduler.exceptions.AuthenticationException;
+import mh.michael.conference_scheduler.exceptions.InvalidRefreshTokenException;
 import mh.michael.conference_scheduler.security.*;
+import mh.michael.conference_scheduler.service.RefreshTokenService;
 import mh.michael.conference_scheduler.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -28,15 +27,20 @@ public class JwtAuthenticationRestController {
   private final AuthenticationManager authenticationManager;
   private final UserService userService;
   private final TokenService tokenService;
+  private final RefreshTokenService refreshTokenService;
+  private final DatabaseAuthUserDetailsService databaseAuthUserDetailsService;
+  private final AccountStatusUserDetailsChecker accountStatusChecker = new AccountStatusUserDetailsChecker();
 
   public JwtAuthenticationRestController(
     AuthenticationManager authenticationManager,
     UserService userService,
-    TokenService tokenService
+    TokenService tokenService, RefreshTokenService refreshTokenService, DatabaseAuthUserDetailsService databaseAuthUserDetailsService
   ) {
     this.authenticationManager = authenticationManager;
     this.userService = userService;
     this.tokenService = tokenService;
+    this.refreshTokenService = refreshTokenService;
+    this.databaseAuthUserDetailsService = databaseAuthUserDetailsService;
   }
 
   @PostMapping(value = "/authenticate")
@@ -61,21 +65,40 @@ public class JwtAuthenticationRestController {
     JwtUserDetails userDetails = (JwtUserDetails) authentication.getPrincipal();
     assert userDetails != null;
     final String token = tokenService.generateToken(userDetails, true);
-    return ResponseEntity.ok(new JwtTokenResponse(token));
+    final String refreshToken = refreshTokenService.issue(userDetails.getUserUuid());
+    return ResponseEntity.ok(new TokenPairResponseDTO(token, refreshToken));
   }
 
-  /**
-   * Issues a brand-new token for the caller without requiring username/password again.
-   * Authentication here is the existing bearer token itself: the request must already
-   * carry a valid, unexpired JWT (it's not in the permitAll list, so Spring Security's
-   * resource-server filter validates it before this method is even invoked). The new
-   * token carries the same subject/roles but a fresh issued-at/expiry.
-   */
-  @PostMapping("/refresh")
-  public ResponseEntity<?> refresh(@AuthenticationPrincipal Jwt currentToken) {
-    String token = tokenService.generateToken(currentToken);
-    return ResponseEntity.ok(new JwtTokenResponse(token));
-  }
+    /**
+     * Exchanges a long-lived refresh token for a brand-new access token +
+     * refresh token pair, without requiring username/password again. Unlike
+     * the old /refresh endpoint, this does NOT require a still-valid access
+     * token - it's public (see JWTWebSecurityConfig's permitAll list), because
+     * the whole point of a refresh token is to get a new access token once the
+     * old one has already expired. RefreshTokenService.exchange(...) validates
+     * the token (unknown/expired/already-used all throw
+     * InvalidRefreshTokenException) and rotates it - the presented token is
+     * single-use.
+     */
+    @PostMapping("/refreshToken")
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequestDTO request) {
+        RefreshTokenService.Exchange exchange = refreshTokenService.exchange(request.getRefreshToken());
+
+        JwtUserDetails userDetails;
+        try {
+            userDetails = databaseAuthUserDetailsService.loadUserByUuid(exchange.getUserId());
+        } catch (UsernameNotFoundException e) {
+            throw new InvalidRefreshTokenException("User no longer exists");
+        }
+
+        // Same check JwtToAppUserAuthenticationConverter applies to a bearer
+        // token's principal - a disabled/locked/expired account shouldn't be
+        // able to obtain a fresh access token via refresh either.
+        accountStatusChecker.check(userDetails);
+
+        final String token = tokenService.generateToken(userDetails, true);
+        return ResponseEntity.ok(new TokenPairResponseDTO(token, exchange.getRefreshToken()));
+    }
 
   @PostMapping(value = "/registerUser")
   public UserWithoutMemberDTO registerNewUser(@Valid @RequestBody NewUserRequestDTO newUserRequestDTO) {

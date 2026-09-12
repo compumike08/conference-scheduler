@@ -14,6 +14,8 @@ jwt:
     private-key: "${CONFERENCE_SCHDLR_APP_JWT_RSA_PRIVATE_KEY}"
   issuer: conference-scheduler
   expiration-minutes: 15
+  refresh-token:
+    expiration-days: 1
 
 ---
 spring:

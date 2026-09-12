@@ -2,7 +2,9 @@ package mh.michael.conference_scheduler.config;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import mh.michael.conference_scheduler.dto.ErrorResponse;
 import mh.michael.conference_scheduler.dto.ValidationErrorResponse;
+import mh.michael.conference_scheduler.exceptions.InvalidRefreshTokenException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -17,9 +19,21 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  // 1. Handles constraints failures (e.g., null values)
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<?> handleInvalidRefreshTokenException(InvalidRefreshTokenException ex) {
+      ErrorResponse errorResponse = ErrorResponse.builder()
+        .timestamp(new Date())
+        .status(HttpStatus.UNAUTHORIZED.value())
+        .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+        .message("Invalid refresh token")
+        .build();
+
+      return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
+
+  // Handles constraints failures (e.g., null values)
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ValidationErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+  public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
     Map<String, String> errors = new HashMap<>();
     ex.getBindingResult().getFieldErrors().forEach(error ->
       errors.put(error.getField(), error.getDefaultMessage())
@@ -35,9 +49,9 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
   }
 
-  // 2. Handles invalid ISO 8601 formats (Jackson parsing errors)
+  // Handles invalid ISO 8601 formats (Jackson parsing errors)
   @ExceptionHandler(HttpMessageNotReadableException.class)
-  public ResponseEntity<ValidationErrorResponse> handleJsonParseException(HttpMessageNotReadableException ex) {
+  public ResponseEntity<?> handleJsonParseException(HttpMessageNotReadableException ex) {
     Map<String, String> errors = new HashMap<>();
     Throwable cause = ex.getCause();
 

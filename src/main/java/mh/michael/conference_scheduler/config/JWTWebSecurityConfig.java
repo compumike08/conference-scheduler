@@ -74,6 +74,7 @@ public class JWTWebSecurityConfig {
           "/registerUser",
           "/sendForgotPasswordEmail",
           "/resetPassword",
+          "/refreshToken",
           "/favicon.ico",
           "/static/**"
         ).permitAll()
