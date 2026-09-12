@@ -41,6 +41,7 @@ public class RefreshTokenCleanupTask {
   @Scheduled(cron = "${jwt.refresh-token.cleanup-cron:0 0 * * * *}")
   @Transactional
   public void deleteExpiredTokens() {
+    log.info("Deleting expired refresh tokens scheduled task running");
     Instant now = Instant.now();
     Instant revokedCutoff = now.minus(revokedRetention);
 
