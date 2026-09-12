@@ -1,0 +1,14 @@
+package mh.michael.conference_scheduler.repository;
+
+import mh.michael.conference_scheduler.model.Location;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+import java.util.UUID;
+
+@Repository
+public interface LocationRepository extends JpaRepository<Location, Long> {
+  Optional<Location> findByLocationUuid(UUID locationUuid);
+  Optional<Location> findByLocationName(String locationName);
+}

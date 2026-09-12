@@ -1,10 +1,8 @@
 package mh.michael.conference_scheduler.util;
 
 import mh.michael.conference_scheduler.dto.*;
-import mh.michael.conference_scheduler.model.Event;
-import mh.michael.conference_scheduler.model.Member;
-import mh.michael.conference_scheduler.model.User;
-import mh.michael.conference_scheduler.model.UserRole;
+import mh.michael.conference_scheduler.model.*;
+
 import java.util.stream.Collectors;
 
 public class ConvertDTOUtil {
@@ -73,6 +71,15 @@ public class ConvertDTOUtil {
       .startDateTime(event.getStartDateTime())
       .endDateTime(event.getEndDateTime())
       .createdByUser(convertUserToUserWithoutMemberDTO(event.getCreatedByUser()))
+      .build();
+  }
+
+  public static LocationDTO convertLocationToLocationDTO(Location location) {
+    return LocationDTO.builder()
+      .locationUuid(location.getLocationUuid().toString())
+      .locationName(location.getLocationName())
+      .capacity(location.getCapacity())
+      .locationDescription(location.getLocationDescription())
       .build();
   }
 }

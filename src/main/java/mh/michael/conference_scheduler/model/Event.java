@@ -51,6 +51,10 @@ public class Event {
   @JoinColumn(nullable = false, name = "event_created_by_user_id")
   private User createdByUser;
 
+  @ManyToOne
+  @JoinColumn(name = "location_id")
+  private Location location;
+
   public void addMemberToEvent(Member member) {
     this.members.add(member);
     member.getEvents().add(this);
