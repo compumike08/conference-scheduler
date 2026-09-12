@@ -33,15 +33,21 @@ public class JWTWebSecurityConfig {
   private final UserDetailsService databaseAuthUserDetailsService;
   private final TokenService tokenService;
   private final JwtToAppUserAuthenticationConverter jwtToAppUserAuthenticationConverter;
+  private final LoggingAccessDeniedHandler loggingAccessDeniedHandler;
+  private final LoggingAuthenticationEntryPoint loggingAuthenticationEntryPoint;
 
   public JWTWebSecurityConfig(
-    UserDetailsService databaseAuthUserDetailsService,
-    TokenService tokenService,
-    JwtToAppUserAuthenticationConverter jwtToAppUserAuthenticationConverter
+          UserDetailsService databaseAuthUserDetailsService,
+          TokenService tokenService,
+          JwtToAppUserAuthenticationConverter jwtToAppUserAuthenticationConverter,
+          LoggingAccessDeniedHandler loggingAccessDeniedHandler,
+          LoggingAuthenticationEntryPoint loggingAuthenticationEntryPoint
   ) {
     this.databaseAuthUserDetailsService = databaseAuthUserDetailsService;
     this.tokenService = tokenService;
     this.jwtToAppUserAuthenticationConverter = jwtToAppUserAuthenticationConverter;
+    this.loggingAccessDeniedHandler = loggingAccessDeniedHandler;
+    this.loggingAuthenticationEntryPoint = loggingAuthenticationEntryPoint;
   }
 
   @Autowired
@@ -74,6 +80,13 @@ public class JWTWebSecurityConfig {
         .requestMatchers(PathRequest.toH2Console()).permitAll()
         .anyRequest().authenticated())
       .oauth2ResourceServer(oauth2 -> oauth2
+        /* Logs every 403 (via @Slf4j) before falling back to the same
+           BearerTokenAccessDeniedHandler behavior Spring Security would
+           otherwise use by default - client-visible behavior is unchanged. */
+        .accessDeniedHandler(loggingAccessDeniedHandler)
+        /* Same idea for 401s: logs, then delegates to the default
+           BearerTokenAuthenticationEntryPoint behavior. */
+        .authenticationEntryPoint(loggingAuthenticationEntryPoint)
         .jwt(jwt -> jwt
           .decoder(jwtDecoder)
           .jwtAuthenticationConverter(jwtToAppUserAuthenticationConverter)))
