@@ -1,5 +1,6 @@
 package mh.michael.conference_scheduler.config;
 
+import jakarta.servlet.DispatcherType;
 import mh.michael.conference_scheduler.security.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.security.autoconfigure.web.servlet.PathRequest;
@@ -61,7 +62,8 @@ public class JWTWebSecurityConfig {
       .csrf(AbstractHttpConfigurer::disable)
       .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
       .authorizeHttpRequests(auth -> auth
-        .requestMatchers(
+         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+         .requestMatchers(
           "/authenticate",
           "/registerUser",
           "/sendForgotPasswordEmail",
@@ -70,7 +72,6 @@ public class JWTWebSecurityConfig {
           "/static/**"
         ).permitAll()
         .requestMatchers(PathRequest.toH2Console()).permitAll()
-        .requestMatchers("/error").anonymous()
         .anyRequest().authenticated())
       .oauth2ResourceServer(oauth2 -> oauth2
         .jwt(jwt -> jwt
