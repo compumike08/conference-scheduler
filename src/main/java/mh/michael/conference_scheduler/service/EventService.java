@@ -102,6 +102,11 @@ public class EventService {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "This location is already reserved during the requested date/time");
     }
 
+    if (newEventRequestDTO.getMaxAttendees() > location.getCapacity()) {
+      log.warn("Location {} has insufficient capacity ({}) for the selected maximum number of attendees ({})", locationUuid, location.getCapacity(), newEventRequestDTO.getMaxAttendees());
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "This location has insufficient capacity for the selected maximum number of attendees");
+    }
+
     Event newEvent = Event.builder()
       .eventUuid(UUID.randomUUID())
       .createdByUser(createdByUser)
