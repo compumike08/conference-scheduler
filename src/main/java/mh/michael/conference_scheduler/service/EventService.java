@@ -126,11 +126,7 @@ public class EventService {
 
   @Transactional
   public EventDTO editEvent(EditEventRequestDTO editEventRequestDTO) {
-    UUID eventUuid = UuidMethods.handleUuidFromStringError(
-      editEventRequestDTO.getEventUuid(),
-      "Event UUID is invalid",
-      HttpStatus.BAD_REQUEST
-    );
+    UUID eventUuid = UUID.fromString(editEventRequestDTO.getEventUuid());
 
     Optional<Event> optEvent =  eventRepository.findByEventUuid(eventUuid);
 
