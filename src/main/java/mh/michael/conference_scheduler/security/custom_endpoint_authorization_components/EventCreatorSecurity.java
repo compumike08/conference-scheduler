@@ -1,6 +1,7 @@
-package mh.michael.conference_scheduler.security;
+package mh.michael.conference_scheduler.security.custom_endpoint_authorization_components;
 
 import mh.michael.conference_scheduler.repository.EventRepository;
+import mh.michael.conference_scheduler.security.JwtUserDetails;
 import mh.michael.conference_scheduler.util.UuidMethods;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
