@@ -2,6 +2,7 @@ package mh.michael.conference_scheduler.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import mh.michael.conference_scheduler.dto.EditLocationRequestDTO;
 import mh.michael.conference_scheduler.dto.LocationDTO;
 import mh.michael.conference_scheduler.dto.NewLocationRequestDTO;
 import mh.michael.conference_scheduler.service.LocationService;
@@ -31,6 +32,13 @@ public class LocationRestController {
   public List<LocationDTO> getAllLocations() {
     log.debug("LocationRestController::getAllLocations");
     return locationService.getAllLocations();
+  }
+
+  @PutMapping("/editLocation")
+  @PreAuthorize("hasRole('ADMIN')")
+  public LocationDTO editLocation(@Valid @RequestBody EditLocationRequestDTO editLocationRequestDTO) {
+    log.debug("LocationRestController::editLocation");
+    return locationService.editLocation(editLocationRequestDTO);
   }
 
   @DeleteMapping("/deleteLocation/{locationUuid}")
