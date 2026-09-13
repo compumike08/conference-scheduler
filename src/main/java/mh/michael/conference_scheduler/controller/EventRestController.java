@@ -38,6 +38,7 @@ public class EventRestController {
   }
 
   @PutMapping("/removeMemberFromEvent/{eventUuid}")
+  @PreAuthorize("hasRole('MEMBER')")
   public EventDTO removeMemberFromEvent(
     @AuthenticationPrincipal JwtUserDetails jwtUserDetails,
     @PathVariable String eventUuid
@@ -47,6 +48,7 @@ public class EventRestController {
   }
 
   @PutMapping("/joinEvent/{eventUuid}")
+  @PreAuthorize("hasRole('MEMBER')")
   public EventDTO joinEvent(
     @AuthenticationPrincipal JwtUserDetails jwtUserDetails,
     @PathVariable("eventUuid") String eventUuid
