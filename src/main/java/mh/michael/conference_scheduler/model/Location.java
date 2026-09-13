@@ -30,7 +30,7 @@ public class Location {
   @Column(length = 2000)
   private String locationDescription;
 
-  @OneToMany(mappedBy = "location",  cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "location",  cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private Set<Event> events = new HashSet<>();
 }

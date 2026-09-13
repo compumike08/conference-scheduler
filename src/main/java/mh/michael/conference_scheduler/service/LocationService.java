@@ -6,6 +6,7 @@ import mh.michael.conference_scheduler.dto.NewLocationRequestDTO;
 import mh.michael.conference_scheduler.model.Location;
 import mh.michael.conference_scheduler.repository.LocationRepository;
 import mh.michael.conference_scheduler.util.ConvertDTOUtil;
+import mh.michael.conference_scheduler.util.UuidMethods;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,5 +50,26 @@ public class LocationService {
   public List<LocationDTO> getAllLocations() {
     List<Location> allLocations = locationRepository.findAll();
     return allLocations.stream().map(ConvertDTOUtil::convertLocationToLocationDTO).toList();
+  }
+
+  @Transactional
+  public LocationDTO deleteLocation(String locationUuidStr) {
+    UUID locationUuid = UuidMethods.handleUuidFromStringError(
+      locationUuidStr,
+      "Location UUID invalid",
+      HttpStatus.BAD_REQUEST
+    );
+
+    Optional<Location> optExistingLocation = locationRepository.findByLocationUuid(locationUuid);
+
+    if (optExistingLocation.isEmpty()) {
+      log.error("Location with UUID {} not found", locationUuid);
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found");
+    }
+
+    Location existingLocation = optExistingLocation.get();
+    locationRepository.delete(existingLocation);
+
+    return ConvertDTOUtil.convertLocationToLocationDTO(existingLocation);
   }
 }

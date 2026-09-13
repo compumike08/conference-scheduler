@@ -33,4 +33,11 @@ public class LocationRestController {
     return locationService.getAllLocations();
   }
 
+  @DeleteMapping("/deleteLocation/{locationUuid}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public LocationDTO deleteLocation(@PathVariable("locationUuid") String locationUuid) {
+    log.debug("LocationRestController::deleteLocation");
+    return locationService.deleteLocation(locationUuid);
+  }
+
 }
