@@ -2,6 +2,7 @@ package mh.michael.conference_scheduler.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import mh.michael.conference_scheduler.dto.EditEventRequestDTO;
 import mh.michael.conference_scheduler.dto.EventDTO;
 import mh.michael.conference_scheduler.dto.NewEventRequestDTO;
 import mh.michael.conference_scheduler.security.JwtUserDetails;
@@ -62,5 +63,12 @@ public class EventRestController {
   public EventDTO deleteEvent(@PathVariable String eventUuid) {
     log.debug("EventRestController::deleteEvent");
     return eventService.deleteEvent(eventUuid);
+  }
+
+  @PutMapping("/editEvent")
+  @PreAuthorize("hasRole('ADMIN') or (hasRole('SCHEDULER') and @eventCreatorSecurity.isCreator(#editEventRequestDTO.eventUuid, authentication.principal))")
+  public EventDTO editEvent(@Valid @RequestBody EditEventRequestDTO editEventRequestDTO) {
+    log.debug("EventRestController::editEvent");
+    return eventService.editEvent(editEventRequestDTO);
   }
 }

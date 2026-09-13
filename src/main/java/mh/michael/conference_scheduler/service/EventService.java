@@ -3,6 +3,7 @@ package mh.michael.conference_scheduler.service;
 import static mh.michael.conference_scheduler.constants.Constants.INTERNAL_SERVER_ERROR_MSG;
 
 import lombok.extern.slf4j.Slf4j;
+import mh.michael.conference_scheduler.dto.EditEventRequestDTO;
 import mh.michael.conference_scheduler.dto.EventDTO;
 import mh.michael.conference_scheduler.dto.NewEventRequestDTO;
 import mh.michael.conference_scheduler.model.Event;
@@ -121,6 +122,69 @@ public class EventService {
     Event savedEvent = eventRepository.save(newEvent);
 
     return ConvertDTOUtil.convertEventToEventDTO(savedEvent);
+  }
+
+  @Transactional
+  public EventDTO editEvent(EditEventRequestDTO editEventRequestDTO) {
+    UUID eventUuid = UuidMethods.handleUuidFromStringError(
+      editEventRequestDTO.getEventUuid(),
+      "Event UUID is invalid",
+      HttpStatus.BAD_REQUEST
+    );
+
+    Optional<Event> optEvent =  eventRepository.findByEventUuid(eventUuid);
+
+    if (optEvent.isEmpty()) {
+      log.warn("Event with UUID of {} not found in editEvent service method", eventUuid);
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found");
+    }
+
+    Event event = optEvent.get();
+
+    UUID newLocationUuid = UuidMethods.handleUuidFromStringError(
+      editEventRequestDTO.getLocationUuid(),
+      "Location UUID is invalid",
+      HttpStatus.BAD_REQUEST
+    );
+
+    Optional<Location> optNewLocation = locationRepository.findByLocationUuid(newLocationUuid);
+
+    if (optNewLocation.isEmpty()) {
+      log.warn("Location with UUID of {} not found in editEvent service method", newLocationUuid);
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found");
+    }
+
+    Location newLocation = optNewLocation.get();
+
+    if (editEventRequestDTO.getMaxAttendees() > newLocation.getCapacity()) {
+      log.warn("Location {} has insufficient capacity ({}) for the selected maximum number of attendees ({})", newLocationUuid, newLocation.getCapacity(), editEventRequestDTO.getMaxAttendees());
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "This location has insufficient capacity for the selected maximum number of attendees");
+    }
+
+    if (event.getMembers().size() > editEventRequestDTO.getMaxAttendees()) {
+      log.warn("Event {} already has too many attendees joined for the new number of max attendees ({})", eventUuid, editEventRequestDTO.getMaxAttendees());
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Event already has too many attendees joined for the updated number of maximum attendees");
+    }
+
+    if (!newLocationUuid.equals(event.getLocation().getLocationUuid())) {
+      Set<Event> locationEvents = newLocation.getEvents();
+
+      boolean isOverlap = isLocationEventOverlap(locationEvents, event.getStartDateTime(), event.getEndDateTime());
+
+      if (isOverlap) {
+        log.warn("The new location {} has an event that overlaps with the event being updated {}", newLocationUuid, event.getEventUuid().toString());
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "The new location is already reserved during the requested date/time");
+      }
+    }
+
+    event.setTitle(editEventRequestDTO.getTitle());
+    event.setDescription(editEventRequestDTO.getDescription());
+    event.setMaxAttendees(editEventRequestDTO.getMaxAttendees());
+    event.setLocation(newLocation);
+
+    Event updatedEvent = eventRepository.save(event);
+
+    return ConvertDTOUtil.convertEventToEventDTO(updatedEvent);
   }
 
   @Transactional
