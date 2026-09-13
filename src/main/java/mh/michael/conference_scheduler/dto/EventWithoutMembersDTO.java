@@ -15,7 +15,7 @@ public class EventWithoutMembersDTO {
   private Long maxAttendees;
   private Instant startDateTime;
   private Instant endDateTime;
-  private String locationUuid;
+  private LocationDTO location;
 
   private UserWithoutMemberDTO createdByUser;
 }
