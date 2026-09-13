@@ -2,6 +2,7 @@ package mh.michael.conference_scheduler.config;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import lombok.extern.slf4j.Slf4j;
 import mh.michael.conference_scheduler.dto.ErrorResponse;
 import mh.michael.conference_scheduler.dto.ValidationErrorResponse;
 import mh.michael.conference_scheduler.exceptions.InvalidRefreshTokenException;
@@ -17,10 +18,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidRefreshTokenException.class)
     public ResponseEntity<?> handleInvalidRefreshTokenException(InvalidRefreshTokenException ex) {
+      log.error("Invalid refresh token exception", ex);
+
       ErrorResponse errorResponse = ErrorResponse.builder()
         .timestamp(new Date())
         .status(HttpStatus.UNAUTHORIZED.value())
