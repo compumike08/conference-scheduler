@@ -143,19 +143,6 @@ public class UserService {
   }
 
   @Transactional
-  public UserWithoutMemberDTO editUser(UserWithoutMemberDTO requestDTO, JwtUserDetails jwtUserDetails) {
-    validateUsernameAndEmail(requestDTO.getUsername(), requestDTO.getEmail(), jwtUserDetails);
-
-    User user = userRepository.getOne(jwtUserDetails.getId());
-
-    user.setUsername(requestDTO.getUsername());
-    user.setEmail(requestDTO.getEmail());
-
-    User savedUser = userRepository.save(user);
-    return convertUserToUserWithoutMemberDTO(savedUser);
-  }
-
-  @Transactional
   public UserWithoutMemberDTO addRoleToUser(AddRoleToUserRequestDTO addRoleToUserRequestDTO) {
     UUID uuid = UUID.fromString(addRoleToUserRequestDTO.getUserUuid());
     String newUserRoleString = addRoleToUserRequestDTO.getNewRole();
