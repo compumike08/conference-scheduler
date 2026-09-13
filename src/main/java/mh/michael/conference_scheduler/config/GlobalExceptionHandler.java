@@ -12,14 +12,34 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static mh.michael.conference_scheduler.constants.Constants.INTERNAL_SERVER_ERROR_MSG;
 
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<?> handleResponseStatusException(ResponseStatusException ex) {
+      return ResponseEntity.status(ex.getStatusCode()).body(errorBody(
+        ex.getStatusCode().value(),
+        ex.getReason() != null ? ex.getReason() : ex.getStatusCode().toString()));
+    }
+
+    private Map<String, Object> errorBody(int status, String message) {
+      Map<String, Object> body = new LinkedHashMap<>();
+      body.put("timestamp", Instant.now());
+      body.put("status", status);
+      body.put("error", message);
+      return body;
+    }
 
     @ExceptionHandler(InvalidRefreshTokenException.class)
     public ResponseEntity<?> handleInvalidRefreshTokenException(InvalidRefreshTokenException ex) {
@@ -88,5 +108,19 @@ public class GlobalExceptionHandler {
       .build();
 
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<?> handleException(Exception ex) {
+      log.error("Unhandled exception", ex);
+
+      ErrorResponse errorResponse = ErrorResponse.builder()
+        .timestamp(new Date())
+        .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+        .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+        .message(INTERNAL_SERVER_ERROR_MSG)
+        .build();
+
+      return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }
