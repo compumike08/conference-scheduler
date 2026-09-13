@@ -99,7 +99,7 @@ public class EventService {
 
     if (isOverlap) {
       log.warn("Location {} has an event that overlaps with the event being created", locationUuid);
-      throw new ResponseStatusException(HttpStatus.CONFLICT, "This location is already reserved during the requested data/time");
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "This location is already reserved during the requested date/time");
     }
 
     Event newEvent = Event.builder()
