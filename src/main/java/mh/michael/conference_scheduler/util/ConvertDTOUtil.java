@@ -59,6 +59,7 @@ public class ConvertDTOUtil {
       .members(event.getMembers().stream()
         .map(ConvertDTOUtil::convertMemberToMemberWithoutEventsDTO).collect(Collectors.toList()))
       .createdByUser(convertUserToUserWithoutMemberDTO(event.getCreatedByUser()))
+      .locationUuid(event.getLocation().getLocationUuid().toString())
       .build();
   }
 
@@ -71,6 +72,7 @@ public class ConvertDTOUtil {
       .startDateTime(event.getStartDateTime())
       .endDateTime(event.getEndDateTime())
       .createdByUser(convertUserToUserWithoutMemberDTO(event.getCreatedByUser()))
+      .locationUuid(event.getLocation().getLocationUuid().toString())
       .build();
   }
 
