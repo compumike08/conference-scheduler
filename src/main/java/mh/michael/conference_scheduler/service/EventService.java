@@ -6,9 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import mh.michael.conference_scheduler.dto.EventDTO;
 import mh.michael.conference_scheduler.dto.NewEventRequestDTO;
 import mh.michael.conference_scheduler.model.Event;
+import mh.michael.conference_scheduler.model.Location;
 import mh.michael.conference_scheduler.model.Member;
 import mh.michael.conference_scheduler.model.User;
 import mh.michael.conference_scheduler.repository.EventRepository;
+import mh.michael.conference_scheduler.repository.LocationRepository;
 import mh.michael.conference_scheduler.repository.UserRepository;
 import mh.michael.conference_scheduler.security.JwtUserDetails;
 import mh.michael.conference_scheduler.util.ConvertDTOUtil;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,10 +30,30 @@ import java.util.stream.Collectors;
 public class EventService {
   private final EventRepository eventRepository;
   private final UserRepository userRepository;
+  private final LocationRepository locationRepository;
 
-  public EventService(EventRepository eventRepository, UserRepository userRepository) {
+  public EventService(
+    EventRepository eventRepository,
+    UserRepository userRepository,
+    LocationRepository locationRepository
+  ) {
     this.eventRepository = eventRepository;
     this.userRepository = userRepository;
+    this.locationRepository = locationRepository;
+  }
+
+  private boolean isLocationEventOverlap(Set<Event> locationEvents, Instant startDateTime, Instant endDateTime) {
+    AtomicBoolean isOverlap = new AtomicBoolean(false);
+
+    locationEvents.forEach(locationEvent -> {
+      if (locationEvent.getStartDateTime().isBefore(endDateTime) &&
+        locationEvent.getEndDateTime().isAfter(startDateTime)
+      ) {
+        isOverlap.set(true);
+      }
+    });
+
+    return isOverlap.get();
   }
 
   @Transactional
@@ -55,11 +78,28 @@ public class EventService {
 
     User createdByUser = optCreatedByUser.get();
 
-    if (newEventRequestDTO.getDescription() != null && !newEventRequestDTO.getDescription().isEmpty()) {
-      if (newEventRequestDTO.getDescription().length() > 2000) {
-        log.warn("Description is greater than 2000 characters long: {}", newEventRequestDTO.getDescription());
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Description cannot be greater than 2000 characters long");
-      }
+    UUID locationUuid = UuidMethods.handleUuidFromStringError(
+      newEventRequestDTO.getLocationUuid(),
+      "Location UUID is invalid",
+      HttpStatus.BAD_REQUEST
+    );
+
+    Optional<Location> optLocation = locationRepository.findByLocationUuid(locationUuid);
+
+    if (optLocation.isEmpty()) {
+      log.error("Location with UUID of {} not found in createEvent service method", locationUuid);
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG);
+    }
+
+    Location location = optLocation.get();
+
+    Set<Event> locationEvents = location.getEvents();
+
+    boolean isOverlap = isLocationEventOverlap(locationEvents, startDateTime, endDateTime);
+
+    if (isOverlap) {
+      log.warn("Location {} has an event that overlaps with the event being created", locationUuid);
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "This location is already reserved during the requested data/time");
     }
 
     Event newEvent = Event.builder()
@@ -70,6 +110,7 @@ public class EventService {
       .title(newEventRequestDTO.getTitle())
       .description(newEventRequestDTO.getDescription())
       .maxAttendees(newEventRequestDTO.getMaxAttendees())
+      .location(location)
       .build();
 
     Event savedEvent = eventRepository.save(newEvent);

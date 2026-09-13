@@ -36,4 +36,8 @@ public class User {
 
   @OneToOne(mappedBy = "memberUser")
   private Member member;
+
+  @OneToMany(mappedBy = "createdByUser")
+  @Builder.Default
+  private Set<Event> eventsCreated = new HashSet<>();
 }

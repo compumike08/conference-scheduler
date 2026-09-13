@@ -47,7 +47,7 @@ public class Event {
   @Builder.Default
   private Set<Member> members = new HashSet<>();
 
-  @OneToOne
+  @ManyToOne
   @JoinColumn(nullable = false, name = "event_created_by_user_id")
   private User createdByUser;
 
