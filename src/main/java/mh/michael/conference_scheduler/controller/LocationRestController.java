@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/location")
+@RequestMapping("/api/location")
 @Slf4j
 public class LocationRestController {
   private final LocationService locationService;

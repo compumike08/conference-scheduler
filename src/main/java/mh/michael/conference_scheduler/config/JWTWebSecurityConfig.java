@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.security.autoconfigure.web.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -70,14 +71,20 @@ public class JWTWebSecurityConfig {
       .authorizeHttpRequests(auth -> auth
          .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
          .requestMatchers(
-          "/authenticate",
-          "/registerUser",
-          "/sendForgotPasswordEmail",
-          "/resetPassword",
-          "/refreshToken",
-          "/favicon.ico",
-          "/static/**"
+           HttpMethod.POST,
+          "/api/authenticate",
+          "/api/registerUser",
+          "/api/sendForgotPasswordEmail",
+          "/api/resetPassword",
+          "/api/refreshToken"
         ).permitAll()
+        .requestMatchers(
+          HttpMethod.GET,
+          "/favicon.ico",
+          "/static/**",
+          "/assets/**"
+        ).permitAll()
+        .requestMatchers(HttpMethod.GET, "/*").permitAll()
         .requestMatchers(PathRequest.toH2Console()).permitAll()
         .anyRequest().authenticated())
       .oauth2ResourceServer(oauth2 -> oauth2
