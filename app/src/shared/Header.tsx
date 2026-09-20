@@ -16,6 +16,14 @@ function Header() {
     {
       title: 'About',
       path: '/about'
+    },
+    {
+      title: 'Register',
+      path: '/register'
+    },
+    {
+      title: 'Login',
+      path: '/login'
     }
   ];
 
@@ -55,7 +63,7 @@ function Header() {
           <Box sx={{ flexGrow: 1 }} />
 
           <Tabs
-            value={currentTab}
+            value={currentTab || false}
             textColor="inherit" // Ensures white text inside the AppBar
             sx={{
               '& .MuiTabs-indicator': {
