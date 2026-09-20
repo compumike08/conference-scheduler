@@ -3,13 +3,23 @@ import {
   matchPath,
   useLocation,
 } from "react-router";
-import { AppBar, Tab, Tabs, Toolbar } from "@mui/material";
+import { AppBar, Box, Tab, Tabs, Toolbar, Typography } from "@mui/material";
 
 function Header() {
+  const { pathname } = useLocation();
+
+  const ROUTE_CONST = [
+    {
+      title: 'Home',
+      path: '/'
+    },
+    {
+      title: 'About',
+      path: '/about'
+    }
+  ];
 
   function useRouteMatch(patterns: readonly string[]) {
-    const { pathname } = useLocation();
-
     for (let i = 0; i < patterns.length; i += 1) {
       const pattern = patterns[i];
       const possibleMatch = matchPath(pattern, pathname);
@@ -21,31 +31,45 @@ function Header() {
     return null;
   }
 
+  const currentRoute = ROUTE_CONST.find((route) => 
+    matchPath({ path: route.path }, pathname)
+  );
+
   // You need to provide the routes in descendant order.
   // This means that if you have nested routes like:
   // users, users/new, users/edit.
   // Then the order should be ['users/add', 'users/edit', 'users'].
-  const routeMatch = useRouteMatch(['/about', '/']);
+  const routeMatch = useRouteMatch([ROUTE_CONST[0].path, ROUTE_CONST[1].path]);
   const currentTab = routeMatch?.pattern?.path;
+  const appBarTitle = currentRoute ? currentRoute.title : "";
 
   return (
-    <AppBar position="static">
-      <Toolbar>
-        <Tabs
-          value={currentTab}
-          textColor="inherit" // Ensures white text inside the AppBar
-          sx={{
-            '& .MuiTabs-indicator': {
-              backgroundColor: '#ffffff',
-            },
-          }}
-          aria-label="navigation tabs"
-        >
-          <Tab label="Home" value="/" to="/" component={Link} />
-          <Tab label="About" value="/about" to="/about" component={Link} />
-        </Tabs>
-      </Toolbar>
-    </AppBar>
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div">
+            {appBarTitle}
+          </Typography>
+
+          {/* Flex spacer pushes everything after it to the far right */}
+          <Box sx={{ flexGrow: 1 }} />
+
+          <Tabs
+            value={currentTab}
+            textColor="inherit" // Ensures white text inside the AppBar
+            sx={{
+              '& .MuiTabs-indicator': {
+                backgroundColor: '#ffffff',
+              },
+            }}
+            aria-label="navigation tabs"
+          >
+            <Tab label={ROUTE_CONST[0].title} value={ROUTE_CONST[0].path} to={ROUTE_CONST[0].path} component={Link} />
+            <Tab label={ROUTE_CONST[1].title} value={ROUTE_CONST[1].path} to={ROUTE_CONST[1].path} component={Link} />
+          </Tabs>
+        </Toolbar>
+      </AppBar>
+    </Box>
   )
 }
 

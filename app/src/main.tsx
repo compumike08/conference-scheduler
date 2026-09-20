@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from "react-router";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import Home from './Home.tsx'
+import Home from './features/home/Home.tsx'
 import Header from './shared/Header.tsx';
 import About from './features/about/About.tsx';
 
