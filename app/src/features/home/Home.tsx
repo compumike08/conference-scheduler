@@ -5,17 +5,24 @@ import { Link } from "react-router";
 function Home() {
 
   return (
-    <Grid container size={12} sx={{
+    <Grid container sx={{
       justifyContent: "center"
     }}>
-      <Box sx={{
-        marginTop: 2
+      <Grid size={{
+        xs: 12,
+        sm: 5,
+        md: 3,
+        lg: 3
       }}>
-        <Stack spacing={2}>
-          <Button size="large" variant="contained" component={Link} to="/register">Register New User</Button>
-          <Button size="large" variant="contained" component={Link} to="/login">Login</Button>
-        </Stack>
-      </Box>
+        <Box sx={{
+          marginTop: 2
+        }}>
+          <Stack spacing={2}>
+            <Button size="large" variant="contained" component={Link} to="/register">Register New User</Button>
+            <Button size="large" variant="contained" component={Link} to="/login">Login</Button>
+          </Stack>
+        </Box>
+      </Grid>
     </Grid>
   )
 }
