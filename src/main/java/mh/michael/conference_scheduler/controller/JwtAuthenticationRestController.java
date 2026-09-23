@@ -22,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins={ "http://localhost:5173", "http://localhost:8080" })
 @Slf4j
 public class JwtAuthenticationRestController {
   private final AuthenticationManager authenticationManager;
