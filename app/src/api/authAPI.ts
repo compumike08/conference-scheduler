@@ -26,6 +26,7 @@ function setupAxiosInterceptors(token: string) {
 export async function refreshToken() {
   // Dummy function for now
   // TODO: Implement actual function
+  console.log("Dummy refreshToken function triggered");
 }
 
 export function registerSuccessfulLoginForJwt(token: string) {
