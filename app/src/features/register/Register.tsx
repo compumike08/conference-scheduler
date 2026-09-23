@@ -1,10 +1,11 @@
-import { Box, Button, FormControl, Grid, Input, InputLabel, Stack, Alert, Backdrop, CircularProgress } from "@mui/material";
+import { Box, Button, FormControl, Grid, Input, InputLabel, Stack, Alert, Backdrop, CircularProgress, FormHelperText } from "@mui/material";
 import { useState } from "react";
+import type { SerializedError } from "@reduxjs/toolkit";
 import { useAppDispatch, useAppSelector, type RootState } from "../../app/store";
 import type { NewUserRequest } from "../../api/registerAPI";
 import { registerUserAction } from "./registerSlice";
 import { REDUX_ACTION_STATUS, UNKNOWN_ERR_MSG } from "../../constants/globalConstants";
-import type { SerializedError } from "@reduxjs/toolkit";
+import { EMAIL_VALIDATION_REGEX } from "../../constants/userConstants";
 
 function Register() {
   const { username: savedNewUsername, registerUserRequestStatus } = useAppSelector((state: RootState) => state.registerUser);
@@ -17,6 +18,11 @@ function Register() {
   const [isServerError, setIsServerError] = useState(false);
   const [serverErrorMsg, setServerErrorMsg] = useState("");
   const [isRegisterUserSuccess, setIsRegisterUserSuccess] = useState(false);
+
+  const [usernameValidationErrMsg, setUsernameValidationErrMsg] = useState<string | null>(null);
+  const [emailValidationErrMsg, setEmailValidationErrMsg] = useState<string | null>(null);
+  const [passwordValidationErrMsg, setPasswordValidationErrMsg] = useState<string | null>(null);
+  const [confirmPasswordValidationErrMsg, setConfirmPasswordValidationErrMsg] = useState<string | null>(null);
 
   const reinitializeAllOfForm = () => {
     setIsRegisterUserSuccess(false);
@@ -32,9 +38,47 @@ function Register() {
     setEmail("");
     setPassword("");
     setPasswordConfirm("");
+
+    setUsernameValidationErrMsg(null);
+    setEmailValidationErrMsg(null);
+    setPasswordValidationErrMsg(null);
+    setConfirmPasswordValidationErrMsg(null);
   };
 
   const handleOnSubmit = async () => {
+    setIsRegisterUserSuccess(false);
+    setIsServerError(false);
+    setServerErrorMsg("");
+
+    let isFrontendInvalid = false;
+
+    if (username.length < 2 || username.length > 50) {
+      setUsernameValidationErrMsg("Username must be between 2 and 50 characters long");
+      isFrontendInvalid = true;
+    }
+
+    if (email.length < 2 || email.length > 100) {
+      setEmailValidationErrMsg("Email must be between 2 and 100 characters long");
+      isFrontendInvalid = true;
+    } else if (!EMAIL_VALIDATION_REGEX.test(email)) {
+      setEmailValidationErrMsg("Email is not a valid email address");
+      isFrontendInvalid = true;
+    }
+
+    if (password.length < 2 || password.length > 50) {
+      setPasswordValidationErrMsg("Username must be between 2 and 50 characters long");
+      isFrontendInvalid = true;
+    }
+
+    if (password !== passwordConfirm) {
+      setConfirmPasswordValidationErrMsg("Password and Confirm Password fields must match");
+      isFrontendInvalid = true;
+    }
+
+    if (isFrontendInvalid) {
+      return;
+    }
+
     const data: NewUserRequest = {
       username,
       email,
@@ -42,10 +86,6 @@ function Register() {
     };
 
     try {
-      setIsRegisterUserSuccess(false);
-      setIsServerError(false);
-      setServerErrorMsg("");
-
       await dispatch(registerUserAction(data)).unwrap();
 
       setIsRegisterUserSuccess(true);
@@ -94,7 +134,7 @@ function Register() {
                 <Alert severity="success">Registered new user '{savedNewUsername}' successfully</Alert>
               )}
 
-              <FormControl variant="standard" fullWidth>
+              <FormControl error={usernameValidationErrMsg !== null} variant="standard" fullWidth>
                 <InputLabel htmlFor="input-username">Username</InputLabel>
                 <Input
                   id="input-username"
@@ -107,9 +147,12 @@ function Register() {
                     }
                   }}
                 />
+                {usernameValidationErrMsg && (
+                  <FormHelperText id="input-username-error">{usernameValidationErrMsg}</FormHelperText>
+                )}
               </FormControl>
 
-              <FormControl variant="standard" fullWidth>
+              <FormControl error={emailValidationErrMsg !== null} variant="standard" fullWidth>
                 <InputLabel htmlFor="input-email">Email</InputLabel>
                 <Input
                   id="input-email"
@@ -122,9 +165,12 @@ function Register() {
                     }
                   }}
                 />
+                {emailValidationErrMsg && (
+                  <FormHelperText id="input-email-error">{emailValidationErrMsg}</FormHelperText>
+                )}
               </FormControl>
 
-              <FormControl variant="standard" fullWidth>
+              <FormControl error={passwordValidationErrMsg !== null} variant="standard" fullWidth>
                 <InputLabel htmlFor="input-password">Password</InputLabel>
                 <Input
                   type="password"
@@ -138,9 +184,12 @@ function Register() {
                     }
                   }}
                 />
+                {passwordValidationErrMsg && (
+                  <FormHelperText id="input-password-error">{passwordValidationErrMsg}</FormHelperText>
+                )}
               </FormControl>
 
-              <FormControl variant="standard" fullWidth>
+              <FormControl error={confirmPasswordValidationErrMsg !== null} variant="standard" fullWidth>
                 <InputLabel htmlFor="input-password-confirm">Confirm Password</InputLabel>
                 <Input
                   type="password"
@@ -154,6 +203,9 @@ function Register() {
                     }
                   }}
                 />
+                {confirmPasswordValidationErrMsg && (
+                  <FormHelperText id="input-password-confirm-error">{confirmPasswordValidationErrMsg}</FormHelperText>
+                )}
               </FormControl>
 
               <Grid container sx={{
