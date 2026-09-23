@@ -1,0 +1,10 @@
+export const UNKNOWN_ERR_MSG = "An unknown error has occurred";
+
+export const REDUX_ACTION_STATUS = {
+  IDLE_STATUS: "IDLE_STATUS",
+  PENDING_STATUS: "PENDING_STATUS",
+  SUCCESS_STATUS: "SUCCESS_STATUS",
+  ERROR_STATUS: "ERROR_STATUS"
+} as const;
+
+export type REDUX_ACTION_STATUS = (typeof REDUX_ACTION_STATUS)[keyof typeof REDUX_ACTION_STATUS];
