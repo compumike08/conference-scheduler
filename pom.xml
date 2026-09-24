@@ -28,7 +28,8 @@
 		<url/>
 	</scm>
 	<properties>
-		<java.version>17</java.version>
+		<java.version>25</java.version>
+        <lombok.version>1.18.40</lombok.version>
         <frontend-maven-plugin.version>1.12.0</frontend-maven-plugin.version>
         <node.version>v24.13.0</node.version>
         <yarn.version>v1.22.22</yarn.version>
@@ -87,7 +88,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.22</version>
             <scope>provided</scope>
         </dependency>
 	</dependencies>
@@ -98,6 +98,21 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version> <!-- clear Java 25 support -->
+                <configuration>
+                    <release>25</release>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </path>
+                        <!-- Include other processors here if applicable, like mapstruct -->
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
         </plugins>
 	</build>
 
