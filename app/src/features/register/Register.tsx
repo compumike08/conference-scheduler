@@ -2,6 +2,7 @@ import { Box, Button, FormControl, Grid, Input, InputLabel, Stack, Alert, Backdr
 import { useState } from "react";
 import type { SerializedError } from "@reduxjs/toolkit";
 import { useNavigate } from "react-router";
+import { useSnackbar } from "notistack";
 import { useAppDispatch, useAppSelector, type RootState } from "../../app/store";
 import type { NewUserRequest } from "../../api/registerAPI";
 import { registerUserAction } from "./registerSlice";
@@ -9,9 +10,10 @@ import { REDUX_ACTION_STATUS, UNKNOWN_ERR_MSG } from "../../constants/globalCons
 import { EMAIL_VALIDATION_REGEX } from "../../constants/userConstants";
 
 function Register() {
-  const { username: savedNewUsername, registerUserRequestStatus } = useAppSelector((state: RootState) => state.registerUser);
+  const { registerUserRequestStatus } = useAppSelector((state: RootState) => state.registerUser);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -19,7 +21,6 @@ function Register() {
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [isServerError, setIsServerError] = useState(false);
   const [serverErrorMsg, setServerErrorMsg] = useState("");
-  const [isRegisterUserSuccess, setIsRegisterUserSuccess] = useState(false);
 
   const [usernameValidationErrMsg, setUsernameValidationErrMsg] = useState<string | null>(null);
   const [emailValidationErrMsg, setEmailValidationErrMsg] = useState<string | null>(null);
@@ -27,7 +28,6 @@ function Register() {
   const [confirmPasswordValidationErrMsg, setConfirmPasswordValidationErrMsg] = useState<string | null>(null);
 
   const reinitializeAllOfForm = () => {
-    setIsRegisterUserSuccess(false);
     setIsServerError(false);
     setServerErrorMsg("");
 
@@ -47,7 +47,6 @@ function Register() {
   };
 
   const handleOnSubmit = async () => {
-    setIsRegisterUserSuccess(false);
     setIsServerError(false);
     setServerErrorMsg("");
 
@@ -89,9 +88,9 @@ function Register() {
     try {
       await dispatch(registerUserAction(data)).unwrap();
 
-      setIsRegisterUserSuccess(true);
       reinitializeFormValues();
       
+      enqueueSnackbar(`Registered new user successfully`, { variant: "success" });
       navigate("/login");
     } catch (err) {
       const error = err as SerializedError;
@@ -131,10 +130,6 @@ function Register() {
                 <Box>
                   <Alert severity="error">{serverErrorMsg}</Alert>
                 </Box>
-              )}
-
-              {isRegisterUserSuccess && (
-                <Alert severity="success">Registered new user '{savedNewUsername}' successfully</Alert>
               )}
 
               <FormControl error={usernameValidationErrMsg !== null} variant="standard" fullWidth>

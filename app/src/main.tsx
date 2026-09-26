@@ -1,14 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from "react-router";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Provider } from 'react-redux'
 import { store } from './app/store'
-import Home from './features/home/Home.tsx'
-import Header from './shared/Header.tsx';
-import About from './features/about/About.tsx';
-import Register from './features/register/Register.tsx';
-import Login from './features/login/Login.tsx';
+import App from './App.tsx';
 
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -40,15 +35,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Provider store={store}>
       <ThemeProvider theme={theme}>
-        <BrowserRouter>
-          <Header />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
-          </Routes>
-        </BrowserRouter>
+        <App />
       </ThemeProvider>
     </Provider>
   </StrictMode>,
