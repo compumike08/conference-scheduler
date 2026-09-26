@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +36,9 @@ public class JwtAuthenticationRestController {
   public JwtAuthenticationRestController(
     AuthenticationManager authenticationManager,
     UserService userService,
-    TokenService tokenService, RefreshTokenService refreshTokenService, DatabaseAuthUserDetailsService databaseAuthUserDetailsService
+    TokenService tokenService,
+    RefreshTokenService refreshTokenService,
+    DatabaseAuthUserDetailsService databaseAuthUserDetailsService
   ) {
     this.authenticationManager = authenticationManager;
     this.userService = userService;
@@ -105,6 +108,15 @@ public class JwtAuthenticationRestController {
   public UserWithoutMemberDTO registerNewUser(@Valid @RequestBody NewUserRequestDTO newUserRequestDTO) {
     log.debug("JwtAuthenticationRestController::registerNewUser");
     return userService.createNewUser(newUserRequestDTO);
+  }
+
+  @PostMapping(value = "/logout")
+  public ResponseEntity<?> logout(
+    @AuthenticationPrincipal JwtUserDetails jwtUserDetails
+  ) {
+    log.debug("JwtAuthenticationRestController::logout");
+    refreshTokenService.revokeAllForUser(jwtUserDetails.getUserUuid());
+    return ResponseEntity.ok().build();
   }
 
   @ExceptionHandler({ AuthenticationException.class })

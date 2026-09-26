@@ -34,6 +34,25 @@ function setupAxiosInterceptors(token: string) {
   });
 }
 
+export async function logout() {
+  const url = `/api/logout`;
+  try {
+    await axios.post(url);
+    clearSessionStorage();
+    return true;
+  } catch (err) {
+    console.log(err);
+
+    if (axios.isAxiosError(err)) {
+      if (err && err.response && err.response.data.error) {
+        throw new Error(err.response.data.error);
+      }
+    }
+
+    throw new Error(UNKNOWN_ERR_MSG);
+  }
+}
+
 export async function refreshToken() {
   // Dummy function for now
   // TODO: Implement actual function
@@ -90,7 +109,7 @@ export function registerSuccessfulLoginForJwt(data: LoginResponse) {
   setTimeout(refreshToken, timerValueForRefresh * 1000);
 }
 
-export function logout() {
+export function clearSessionStorage() {
   sessionStorage.clear();
 
   if (axiosHeaderInterceptor) {

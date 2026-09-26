@@ -1,16 +1,18 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import { authenticate, type LoginRequest, type LoginResponse } from '../../api/authAPI';
+import { authenticate, logout, type LoginRequest, type LoginResponse } from '../../api/authAPI';
 import { REDUX_ACTION_STATUS } from '../../constants/globalConstants';
 
 export interface LoginState {
     authenticateRequestStatus: REDUX_ACTION_STATUS,
+    logoutRequestStatus: REDUX_ACTION_STATUS,
     token: string | null,
     refreshToken: string | null
 }
 
 const initialState: LoginState = {
     authenticateRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
+    logoutRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
     token: null,
     refreshToken: null
 };
@@ -20,6 +22,13 @@ export const authenticateAction = createAsyncThunk(
     async (data: LoginRequest) => {
         return await authenticate(data);
     }
+);
+
+export const logoutAction = createAsyncThunk(
+  "auth/logoutAction",
+  async () => {
+    return await logout();
+  }
 );
 
 export const loginSlice = createSlice({
@@ -38,6 +47,17 @@ export const loginSlice = createSlice({
       })
       .addCase(authenticateAction.rejected, (state) => {
         state.authenticateRequestStatus = REDUX_ACTION_STATUS.ERROR_STATUS;
+      })
+      .addCase(logoutAction.fulfilled, (state) => {
+        state.logoutRequestStatus = REDUX_ACTION_STATUS.SUCCESS_STATUS;
+        state.token = null;
+        state.refreshToken = null;
+      })
+      .addCase(logoutAction.pending, (state) => {
+        state.logoutRequestStatus = REDUX_ACTION_STATUS.PENDING_STATUS;
+      })
+      .addCase(logoutAction.rejected, (state) => {
+        state.logoutRequestStatus = REDUX_ACTION_STATUS.ERROR_STATUS;
       });
   }
 });

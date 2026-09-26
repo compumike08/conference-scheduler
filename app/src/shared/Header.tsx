@@ -4,9 +4,12 @@ import {
   useLocation,
 } from "react-router";
 import { AppBar, Box, Tab, Tabs, Toolbar, Typography } from "@mui/material";
+import { useAppSelector, type RootState } from "../app/store";
 
 function Header() {
   const { pathname } = useLocation();
+
+  const { token } = useAppSelector((state: RootState) => state.login);
 
   const ROUTE_CONST = [
     {
@@ -24,6 +27,10 @@ function Header() {
     {
       title: 'Login',
       path: '/login'
+    },
+    {
+      title: 'Logout',
+      path: '/logout'
     }
   ];
 
@@ -47,7 +54,10 @@ function Header() {
   // This means that if you have nested routes like:
   // users, users/new, users/edit.
   // Then the order should be ['users/add', 'users/edit', 'users'].
-  const routeMatch = useRouteMatch([ROUTE_CONST[0].path, ROUTE_CONST[1].path]);
+  let routeMatch = useRouteMatch([ROUTE_CONST[0].path, ROUTE_CONST[1].path]);
+  if (token !== null) {
+    routeMatch = useRouteMatch([ROUTE_CONST[0].path, ROUTE_CONST[1].path, ROUTE_CONST[4].path]);
+  }
   const currentTab = routeMatch?.pattern?.path;
   const appBarTitle = currentRoute ? currentRoute.title : "";
 
@@ -74,6 +84,9 @@ function Header() {
           >
             <Tab label={ROUTE_CONST[0].title} value={ROUTE_CONST[0].path} to={ROUTE_CONST[0].path} component={Link} />
             <Tab label={ROUTE_CONST[1].title} value={ROUTE_CONST[1].path} to={ROUTE_CONST[1].path} component={Link} />
+            {token !== null && (
+              <Tab label={ROUTE_CONST[4].title} value={ROUTE_CONST[4].path} to={ROUTE_CONST[4].path} component={Link} />
+            )}
           </Tabs>
         </Toolbar>
       </AppBar>
