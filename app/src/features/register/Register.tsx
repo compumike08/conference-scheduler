@@ -1,6 +1,7 @@
 import { Box, Button, FormControl, Grid, Input, InputLabel, Stack, Alert, Backdrop, CircularProgress, FormHelperText } from "@mui/material";
 import { useState } from "react";
 import type { SerializedError } from "@reduxjs/toolkit";
+import { useNavigate } from "react-router";
 import { useAppDispatch, useAppSelector, type RootState } from "../../app/store";
 import type { NewUserRequest } from "../../api/registerAPI";
 import { registerUserAction } from "./registerSlice";
@@ -10,6 +11,7 @@ import { EMAIL_VALIDATION_REGEX } from "../../constants/userConstants";
 function Register() {
   const { username: savedNewUsername, registerUserRequestStatus } = useAppSelector((state: RootState) => state.registerUser);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -28,7 +30,6 @@ function Register() {
     setIsRegisterUserSuccess(false);
     setIsServerError(false);
     setServerErrorMsg("");
-    setIsRegisterUserSuccess(false);
 
     reinitializeFormValues();
   };
@@ -65,8 +66,8 @@ function Register() {
       isFrontendInvalid = true;
     }
 
-    if (password.length < 2 || password.length > 50) {
-      setPasswordValidationErrMsg("Username must be between 2 and 50 characters long");
+    if (password.length < 8 || password.length > 50) {
+      setPasswordValidationErrMsg("Password must be between 8 and 50 characters long");
       isFrontendInvalid = true;
     }
 
@@ -90,6 +91,8 @@ function Register() {
 
       setIsRegisterUserSuccess(true);
       reinitializeFormValues();
+      
+      navigate("/login");
     } catch (err) {
       const error = err as SerializedError;
       setIsServerError(true);

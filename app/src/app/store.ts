@@ -1,10 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { useDispatch, useSelector, type TypedUseSelectorHook } from 'react-redux';
 import registerReducer from '../features/register/registerSlice';
+import loginReducer from '../features/login/loginSlice';
 
 export const store = configureStore({
   reducer: {
-    registerUser: registerReducer
+    registerUser: registerReducer,
+    login: loginReducer
   },
 })
 

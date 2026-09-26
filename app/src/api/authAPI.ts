@@ -1,6 +1,17 @@
 import axios from "axios";
 import { decodeJwt } from "jose";
-import { TOKEN_SESSION_ATTRIBUTE_NAME } from "../constants/authConstants";
+import { TOKEN_SESSION_ATTRIBUTE_NAME, REFRESH_SESSION_ATTRIBUTE_NAME } from "../constants/authConstants";
+import { UNKNOWN_ERR_MSG } from "../constants/globalConstants";
+
+export interface LoginRequest {
+  username: string,
+  password: string
+}
+
+export interface LoginResponse {
+  token: string,
+  refreshToken: string
+}
 
 let axiosHeaderInterceptor: number | null = null;
 
@@ -29,12 +40,35 @@ export async function refreshToken() {
   console.log("Dummy refreshToken function triggered");
 }
 
-export function registerSuccessfulLoginForJwt(token: string) {
-  const bearerToken = createJWTToken(token);
+export async function authenticate(data: LoginRequest): Promise<LoginResponse> {
+  const url = `/api/authenticate`;
+  try {
+    const response = await axios.post(url, {
+      username: data.username,
+      password: data.password
+    });
+    registerSuccessfulLoginForJwt(response.data);
+    return response.data;
+  } catch (err) {
+    console.log(err);
+
+    if (axios.isAxiosError(err)) {
+      if (err && err.response && err.response.data.error) {
+        throw new Error(err.response.data.error);
+      }
+    }
+
+    throw new Error(UNKNOWN_ERR_MSG);
+  }
+}
+
+export function registerSuccessfulLoginForJwt(data: LoginResponse) {
+  const bearerToken = createJWTToken(data.token);
   sessionStorage.setItem(TOKEN_SESSION_ATTRIBUTE_NAME, bearerToken);
+  sessionStorage.setItem(REFRESH_SESSION_ATTRIBUTE_NAME, data.refreshToken);
   setupAxiosInterceptors(bearerToken);
 
-  const decodedToken = decodeJwt(token);
+  const decodedToken = decodeJwt(data.token);
 
   if (!decodedToken.exp) {
     throw new Error("Auth token from server does not have 'exp' claim");
