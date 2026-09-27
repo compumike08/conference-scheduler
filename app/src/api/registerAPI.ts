@@ -1,6 +1,6 @@
 import axios from "axios";
 import { UNKNOWN_ERR_MSG } from "../constants/globalConstants";
-import type { UserRole } from "../constants/userConstants";
+import type { UserRequestResponse } from "./userAPI";
 
 export interface NewUserRequest {
   username: string,
@@ -8,14 +8,7 @@ export interface NewUserRequest {
   password: string
 }
 
-export interface NewUserRequestResponse {
-  userUuid: string,
-  username: string,
-  email: string,
-  roles: Array<UserRole>
-}
-
-export async function registerUser(data: NewUserRequest): Promise<NewUserRequestResponse> {
+export async function registerUser(data: NewUserRequest): Promise<UserRequestResponse> {
   const url = `/api/registerUser`;
   try {
     const response = await axios.post(url, {

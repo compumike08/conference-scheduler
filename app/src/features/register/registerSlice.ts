@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import { registerUser, type NewUserRequest, type NewUserRequestResponse } from '../../api/registerAPI';
+import { registerUser, type NewUserRequest } from '../../api/registerAPI';
+import { type UserRequestResponse } from '../../api/userAPI';
 import type { UserRole } from '../../constants/userConstants';
 import { REDUX_ACTION_STATUS } from '../../constants/globalConstants';
 
@@ -33,7 +34,7 @@ export const registerSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(registerUserAction.fulfilled, (state, action: PayloadAction<NewUserRequestResponse>) => {
+      .addCase(registerUserAction.fulfilled, (state, action: PayloadAction<UserRequestResponse>) => {
         state.registerUserRequestStatus = REDUX_ACTION_STATUS.SUCCESS_STATUS;
         state.userUuid = action.payload.userUuid;
         state.username = action.payload.username;

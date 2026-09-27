@@ -1,21 +1,25 @@
 import { Box, Button, FormControl, Grid, Input, InputLabel, Stack, Alert, Backdrop, CircularProgress, FormHelperText } from "@mui/material";
 import { useState } from "react";
 import type { SerializedError } from "@reduxjs/toolkit";
+import { useNavigate } from "react-router";
+import { useSnackbar } from "notistack";
 import { useAppDispatch, useAppSelector, type RootState } from "../../app/store";
 import { REDUX_ACTION_STATUS, UNKNOWN_ERR_MSG } from "../../constants/globalConstants";
 import type { LoginRequest } from "../../api/authAPI";
 import { authenticateAction } from "./loginSlice";
+import { getCurrentUserAction } from "../user/userSlice";
 
 function Login() {
   const { authenticateRequestStatus } = useAppSelector((state: RootState) => state.login);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const [isServerError, setIsServerError] = useState(false);
   const [serverErrorMsg, setServerErrorMsg] = useState("");
-  const [isAuthenticateSuccess, setIsAuthenticateSuccess] = useState(false);
 
   const [usernameValidationErrMsg, setUsernameValidationErrMsg] = useState<string | null>(null);
   const [passwordValidationErrMsg, setPasswordValidationErrMsg] = useState<string | null>(null);
@@ -28,7 +32,6 @@ function Login() {
   const reintializeErrors = () => {
     setIsServerError(false);
     setServerErrorMsg("");
-    setIsAuthenticateSuccess(false);
 
     setUsernameValidationErrMsg(null);
     setPasswordValidationErrMsg(null);
@@ -65,9 +68,12 @@ function Login() {
 
     try {
       await dispatch(authenticateAction(data)).unwrap();
+      await dispatch(getCurrentUserAction()).unwrap();
 
-      setIsAuthenticateSuccess(true);
-      reinitializeFormValues();
+      enqueueSnackbar("Logged in successfully", { variant: "success" });
+
+      // TODO: Redirect to '/about' for now; update later
+      navigate("/about");
     } catch (err) {
       const error = err as SerializedError;
       setIsServerError(true);
@@ -106,10 +112,6 @@ function Login() {
                 <Box>
                   <Alert severity="error">{serverErrorMsg}</Alert>
                 </Box>
-              )}
-
-              {isAuthenticateSuccess && (
-                <Alert severity="success">Logged in successfully</Alert>
               )}
 
               <FormControl error={usernameValidationErrMsg !== null} variant="standard" fullWidth>
