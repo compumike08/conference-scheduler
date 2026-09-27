@@ -26,12 +26,14 @@ function isUserLoggedIn() {
 }
 
 function setupAxiosInterceptors(token: string) {
+  ejectAxiosInterceptor();
+
   axiosHeaderInterceptor = axios.interceptors.request.use((config) => {
     if (isUserLoggedIn()) {
       config.headers.authorization = token;
     }
     return config;
-  });
+  }, undefined, { synchronous: true });
 }
 
 export async function logout() {
@@ -111,8 +113,11 @@ export function registerSuccessfulLoginForJwt(data: LoginResponse) {
 
 export function clearSessionStorage() {
   sessionStorage.clear();
+  ejectAxiosInterceptor();
+}
 
-  if (axiosHeaderInterceptor) {
+export function ejectAxiosInterceptor() {
+  if (axiosHeaderInterceptor !== null) {
     axios.interceptors.request.eject(axiosHeaderInterceptor);
     axiosHeaderInterceptor = null;
   }
