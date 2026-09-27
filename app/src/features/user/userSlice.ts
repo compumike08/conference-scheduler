@@ -3,6 +3,7 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import { REDUX_ACTION_STATUS } from '../../constants/globalConstants';
 import type { UserRequestResponse } from '../../api/userAPI';
 import { getCurrentUser } from '../../api/userAPI';
+import { logoutAction } from '../login/loginSlice';
 
 export interface UserState {
     getCurrentUserStatus: REDUX_ACTION_STATUS,
@@ -36,6 +37,10 @@ export const userSlice = createSlice({
       })
       .addCase(getCurrentUserAction.rejected, (state) => {
         state.getCurrentUserStatus = REDUX_ACTION_STATUS.ERROR_STATUS;
+      })
+      .addCase(logoutAction.fulfilled, (state) => {
+        state.getCurrentUserStatus = REDUX_ACTION_STATUS.IDLE_STATUS;
+        state.currentUser = null;
       });
   }
 });
