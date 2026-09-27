@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   isAuthenticated,
   children,
-  redirectPath = '/login',
+  redirectPath = '/',
 }) => {
   if (!isAuthenticated) {
     return <Navigate to={redirectPath} replace />;
