@@ -5,10 +5,12 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import lombok.extern.slf4j.Slf4j;
 import mh.michael.conference_scheduler.dto.ErrorResponse;
 import mh.michael.conference_scheduler.dto.ValidationErrorResponse;
+import mh.michael.conference_scheduler.exceptions.AuthenticationException;
 import mh.michael.conference_scheduler.exceptions.InvalidRefreshTokenException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -108,6 +110,34 @@ public class GlobalExceptionHandler {
       .build();
 
     return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(AuthenticationException.class)
+  public ResponseEntity<?> handleAuthenticationException(AuthenticationException ex) {
+    log.error("Authentication exception", ex);
+
+    ErrorResponse errorResponse = ErrorResponse.builder()
+      .timestamp(new Date())
+      .status(HttpStatus.UNAUTHORIZED.value())
+      .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+      .message("Access Denied")
+      .build();
+
+    return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+  }
+
+  @ExceptionHandler(AuthorizationDeniedException.class)
+  public ResponseEntity<?> handleAuthorizationException(AuthorizationDeniedException ex) {
+    log.error("Authorization exception", ex);
+
+    ErrorResponse errorResponse = ErrorResponse.builder()
+      .timestamp(new Date())
+      .status(HttpStatus.FORBIDDEN.value())
+      .error(HttpStatus.FORBIDDEN.getReasonPhrase())
+      .message("Access Denied")
+      .build();
+
+    return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
   }
 
   @ExceptionHandler(Exception.class)
