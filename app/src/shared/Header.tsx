@@ -31,6 +31,10 @@ function Header() {
     {
       title: 'Logout',
       path: '/logout'
+    },
+    {
+      title: 'Member',
+      path: '/member'
     }
   ];
 

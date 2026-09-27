@@ -4,6 +4,8 @@ import { REDUX_ACTION_STATUS } from '../../constants/globalConstants';
 import type { UserRequestResponse } from '../../api/userAPI';
 import { getCurrentUser } from '../../api/userAPI';
 import { logoutAction } from '../login/loginSlice';
+import { createMemberAndReturnUpdatedUserAction } from '../member/memberSlice';
+import type { UserWithMemberResponse } from '../../api/memberAPI';
 
 export interface UserState {
     getCurrentUserStatus: REDUX_ACTION_STATUS,
@@ -41,6 +43,14 @@ export const userSlice = createSlice({
       .addCase(logoutAction.fulfilled, (state) => {
         state.getCurrentUserStatus = REDUX_ACTION_STATUS.IDLE_STATUS;
         state.currentUser = null;
+      })
+      .addCase(createMemberAndReturnUpdatedUserAction.fulfilled, (state, action: PayloadAction<UserWithMemberResponse>) => {
+        if (state.currentUser) {
+          state.currentUser.roles = action.payload.roles;
+          state.currentUser.memberUuid = action.payload.member.memberUuid;
+        } else {
+          throw new Error("userSlice.currentUser is null/undefined when createMemberAndReturnUpdatedUserAction.fulfilled triggers");
+        }
       });
   }
 });

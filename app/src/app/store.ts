@@ -3,12 +3,14 @@ import { useDispatch, useSelector, type TypedUseSelectorHook } from 'react-redux
 import registerReducer from '../features/register/registerSlice';
 import loginReducer from '../features/login/loginSlice';
 import userReducer from '../features/user/userSlice';
+import memberReducer from '../features/member/memberSlice';
 
 export const store = configureStore({
   reducer: {
     registerUser: registerReducer,
     login: loginReducer,
-    user: userReducer
+    user: userReducer,
+    member: memberReducer
   },
 })
 

@@ -5,9 +5,10 @@ import Header from './shared/Header.tsx';
 import About from './features/about/About.tsx';
 import Register from './features/register/Register.tsx';
 import Login from './features/login/Login.tsx';
+import Logout from "./features/logout/Logout.tsx";
+import Member from "./features/member/Member.tsx";
 
 import "./App.css";
-import Logout from "./features/logout/Logout.tsx";
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/logout" element={<Logout />} />
+          <Route path="/member" element={<Member />} />
         </Routes>
       </SnackbarProvider>
     </BrowserRouter>

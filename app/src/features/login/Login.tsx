@@ -8,9 +8,11 @@ import { REDUX_ACTION_STATUS, UNKNOWN_ERR_MSG } from "../../constants/globalCons
 import type { LoginRequest } from "../../api/authAPI";
 import { authenticateAction } from "./loginSlice";
 import { getCurrentUserAction } from "../user/userSlice";
+import { UserRole } from "../../constants/userConstants";
 
 function Login() {
   const { authenticateRequestStatus } = useAppSelector((state: RootState) => state.login);
+
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
@@ -68,12 +70,16 @@ function Login() {
 
     try {
       await dispatch(authenticateAction(data)).unwrap();
-      await dispatch(getCurrentUserAction()).unwrap();
+      const currentUser = await dispatch(getCurrentUserAction()).unwrap();
 
       enqueueSnackbar("Logged in successfully", { variant: "success" });
 
-      // TODO: Redirect to '/about' for now; update later
-      navigate("/about");
+      if (!currentUser.roles.includes(UserRole.ROLE_MEMBER)) {
+        navigate("/member");
+      } else {
+        // TODO: Redirect to '/about' for now; update later
+        navigate("/about");
+      }
     } catch (err) {
       const error = err as SerializedError;
       setIsServerError(true);
