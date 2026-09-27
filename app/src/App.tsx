@@ -9,8 +9,16 @@ import Logout from "./features/logout/Logout.tsx";
 import Member from "./features/member/Member.tsx";
 
 import "./App.css";
+import { useAppSelector, type RootState } from "./app/store.ts";
+import { UserRole } from "./constants/userConstants.ts";
+import { ProtectedRoute } from "./shared/ProtectedRoute.tsx";
+import AdminDashboard from "./features/admin/AdminDashboard.tsx";
 
 const App = () => {
+  const { currentUser } = useAppSelector((state: RootState) => state.user);
+  const { roles = [] } = currentUser ?? {};
+  const isAdminUser = roles.includes(UserRole.ROLE_ADMIN);
+
   return (
     <BrowserRouter>
       <SnackbarProvider maxSnack={3} classes={{
@@ -24,6 +32,14 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/logout" element={<Logout />} />
           <Route path="/member" element={<Member />} />
+          <Route
+            path="/adminDashboard"
+            element={
+              <ProtectedRoute isAuthenticated={isAdminUser}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </SnackbarProvider>
     </BrowserRouter>

@@ -5,11 +5,14 @@ import {
 } from "react-router";
 import { AppBar, Box, Tab, Tabs, Toolbar, Typography } from "@mui/material";
 import { useAppSelector, type RootState } from "../app/store";
+import { UserRole } from "../constants/userConstants";
 
 function Header() {
   const { pathname } = useLocation();
-
   const { token } = useAppSelector((state: RootState) => state.login);
+  const { currentUser } = useAppSelector((state: RootState) => state.user);
+  const { roles = [] } = currentUser ?? {};
+  const isAdminUser = roles.includes(UserRole.ROLE_ADMIN);
 
   const ROUTE_CONST = [
     {
@@ -35,6 +38,10 @@ function Header() {
     {
       title: 'Member',
       path: '/member'
+    },
+    {
+      title: 'Admin Dashboard',
+      path: '/adminDashboard'
     }
   ];
 
@@ -58,10 +65,17 @@ function Header() {
   // This means that if you have nested routes like:
   // users, users/new, users/edit.
   // Then the order should be ['users/add', 'users/edit', 'users'].
-  let routeMatch = useRouteMatch([ROUTE_CONST[0].path, ROUTE_CONST[1].path]);
-  if (token !== null) {
-    routeMatch = useRouteMatch([ROUTE_CONST[0].path, ROUTE_CONST[1].path, ROUTE_CONST[4].path]);
+  const routeArray = [ROUTE_CONST[0].path, ROUTE_CONST[1].path];
+  
+  if (isAdminUser) {
+    routeArray.push(ROUTE_CONST[6].path);
   }
+  
+  if (token !== null) {
+    routeArray.push(ROUTE_CONST[4].path);
+  }
+
+  const routeMatch = useRouteMatch(routeArray);
   const currentTab = routeMatch?.pattern?.path;
   const appBarTitle = currentRoute ? currentRoute.title : "";
 
@@ -88,6 +102,9 @@ function Header() {
           >
             <Tab label={ROUTE_CONST[0].title} value={ROUTE_CONST[0].path} to={ROUTE_CONST[0].path} component={Link} />
             <Tab label={ROUTE_CONST[1].title} value={ROUTE_CONST[1].path} to={ROUTE_CONST[1].path} component={Link} />
+            {isAdminUser && (
+              <Tab label={ROUTE_CONST[6].title} value={ROUTE_CONST[6].path} to={ROUTE_CONST[6].path} component={Link} />
+            )}
             {token !== null && (
               <Tab label={ROUTE_CONST[4].title} value={ROUTE_CONST[4].path} to={ROUTE_CONST[4].path} component={Link} />
             )}
