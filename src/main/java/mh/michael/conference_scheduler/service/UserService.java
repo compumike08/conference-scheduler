@@ -10,6 +10,7 @@ import mh.michael.conference_scheduler.model.UserRole;
 import mh.michael.conference_scheduler.repository.UserRepository;
 import mh.michael.conference_scheduler.repository.UserRoleRepository;
 import mh.michael.conference_scheduler.security.JwtUserDetails;
+import mh.michael.conference_scheduler.util.ConvertDTOUtil;
 import mh.michael.conference_scheduler.util.UuidMethods;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,10 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static mh.michael.conference_scheduler.constants.Constants.INTERNAL_SERVER_ERROR_MSG;
 import static mh.michael.conference_scheduler.util.ConvertDTOUtil.convertUserToUserWithoutMemberDTO;
@@ -140,6 +138,21 @@ public class UserService {
     User user = optUser.get();
 
     return convertUserToUserWithoutMemberDTO(user);
+  }
+
+  @Transactional
+  public List<UserWithoutMemberDTO> searchUserByUsername(String searchUsername) {
+    if (searchUsername == null || searchUsername.isBlank()) {
+      String errMsg =  "Username is null or empty";
+      log.error(errMsg);
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errMsg);
+    }
+
+    List<User> matchingUsernameList = userRepository.findByUsernameContainingIgnoreCaseOrderByUsernameAsc(searchUsername);
+
+    return matchingUsernameList.stream()
+      .map(ConvertDTOUtil::convertUserToUserWithoutMemberDTO)
+      .toList();
   }
 
   @Transactional

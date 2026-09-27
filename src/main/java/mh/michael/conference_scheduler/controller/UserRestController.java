@@ -10,6 +10,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/user")
 @Slf4j
@@ -27,9 +29,17 @@ public class UserRestController {
   }
 
   @GetMapping("/userUuid/{userUuid}")
+  @PreAuthorize("hasRole('ADMIN')")
   public UserWithoutMemberDTO userUuid(@PathVariable String userUuid) {
     log.debug("UserRestController::userUuid");
     return userService.getUserByUuid(userUuid);
+  }
+
+  @GetMapping("/searchByUsername")
+  @PreAuthorize("hasRole('ADMIN')")
+  public List<UserWithoutMemberDTO> searchByUsername(@RequestParam(name = "searchUsername") String searchUsername) {
+    log.debug("UserRestController::searchByUsername");
+    return userService.searchUserByUsername(searchUsername);
   }
 
   @PutMapping("/addRole")
