@@ -4,13 +4,15 @@ import registerReducer from '../features/register/registerSlice';
 import loginReducer from '../features/login/loginSlice';
 import userReducer from '../features/user/userSlice';
 import memberReducer from '../features/member/memberSlice';
+import adminDashboardReducer from '../features/admin/adminDashboardSlice';
 
 export const store = configureStore({
   reducer: {
     registerUser: registerReducer,
     login: loginReducer,
     user: userReducer,
-    member: memberReducer
+    member: memberReducer,
+    adminDashboard: adminDashboardReducer
   },
 })
 

@@ -60,7 +60,11 @@ function Header() {
     },
     {
       title: 'Admin Dashboard',
-      path: '/adminDashboard'
+      path: '/admin/dashboard'
+    },
+    {
+      title: 'Admin - Edit User Roles',
+      path: '/admin/user/:userUuid'
     }
   ];
 

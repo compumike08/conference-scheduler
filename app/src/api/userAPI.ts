@@ -27,3 +27,25 @@ export async function getCurrentUser(): Promise<UserRequestResponse> {
     throw new Error(UNKNOWN_ERR_MSG);
   }
 }
+
+export async function searchByUsername(searchUsername: string): Promise<Array<UserRequestResponse>> {
+  const url = `/api/user/searchByUsername`;
+  try {
+    const response = await axios.get(url, {
+      params: {
+        searchUsername
+      }
+    });
+    return response.data;
+  } catch (err) {
+    console.log(err);
+
+    if (axios.isAxiosError(err)) {
+      if (err && err.response && err.response.data.error) {
+        throw new Error(err.response.data.error);
+      }
+    }
+
+    throw new Error(UNKNOWN_ERR_MSG);
+  }
+}

@@ -13,6 +13,7 @@ import { useAppSelector, type RootState } from "./app/store.ts";
 import { UserRole } from "./constants/userConstants.ts";
 import { ProtectedRoute } from "./shared/ProtectedRoute.tsx";
 import AdminDashboard from "./features/admin/AdminDashboard.tsx";
+import EditUserRoles from "./features/admin/user/EditUserRoles.tsx";
 
 const App = () => {
   const { currentUser } = useAppSelector((state: RootState) => state.user);
@@ -33,10 +34,18 @@ const App = () => {
           <Route path="/logout" element={<Logout />} />
           <Route path="/member" element={<Member />} />
           <Route
-            path="/adminDashboard"
+            path="/admin/dashboard"
             element={
               <ProtectedRoute isAuthenticated={isAdminUser}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/user/:userUuid"
+            element={
+              <ProtectedRoute isAuthenticated={isAdminUser}>
+                <EditUserRoles />
               </ProtectedRoute>
             }
           />
