@@ -1,4 +1,4 @@
-import { Box, Button, FormControl, Grid, Input, InputLabel, Stack, Alert, Backdrop, CircularProgress, FormHelperText } from "@mui/material";
+import { Box, Button, FormControl, Grid, Input, InputLabel, Stack, Alert, Backdrop, CircularProgress, FormHelperText, Typography } from "@mui/material";
 import { useState } from "react";
 import type { SerializedError } from "@reduxjs/toolkit";
 import { useNavigate } from "react-router";
@@ -126,6 +126,9 @@ function Register() {
             <Stack spacing={2} sx={{
               marginTop: 2
             }}>
+              <Typography variant="h5" component="div">
+                Register New User
+              </Typography>
               {isServerError && (
                 <Box>
                   <Alert severity="error">{serverErrorMsg}</Alert>
