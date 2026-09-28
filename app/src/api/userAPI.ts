@@ -12,7 +12,7 @@ export interface UserRequestResponse {
 
 export interface AddRoleToUserRequest {
   userUuid: string,
-  newRole: UserRoleNoMemberOrUser
+  role: UserRoleNoMemberOrUser
 }
 
 export async function getCurrentUser(): Promise<UserRequestResponse> {

@@ -2,7 +2,7 @@ package mh.michael.conference_scheduler.service;
 
 import lombok.extern.slf4j.Slf4j;
 import mh.michael.conference_scheduler.constants.EUserRole;
-import mh.michael.conference_scheduler.dto.AddRoleToUserRequestDTO;
+import mh.michael.conference_scheduler.dto.EditRoleForUserRequestDTO;
 import mh.michael.conference_scheduler.dto.NewUserRequestDTO;
 import mh.michael.conference_scheduler.dto.UserWithoutMemberDTO;
 import mh.michael.conference_scheduler.model.User;
@@ -156,15 +156,15 @@ public class UserService {
   }
 
   @Transactional
-  public UserWithoutMemberDTO addRoleToUser(AddRoleToUserRequestDTO addRoleToUserRequestDTO) {
-    UUID uuid = UUID.fromString(addRoleToUserRequestDTO.getUserUuid());
-    String newUserRoleString = addRoleToUserRequestDTO.getNewRole();
+  public UserWithoutMemberDTO addRoleToUser(EditRoleForUserRequestDTO editRoleForUserRequestDTO) {
+    UUID uuid = UUID.fromString(editRoleForUserRequestDTO.getUserUuid());
+    String newUserRoleString = editRoleForUserRequestDTO.getRole();
     EUserRole newUserRoleEnum = EUserRole.valueOf(newUserRoleString);
 
     Optional<User> optUser = userRepository.findByUserUuid(uuid);
 
     if (optUser.isEmpty()) {
-      log.error("Unable to find user with user UUID: {}", addRoleToUserRequestDTO.getUserUuid());
+      log.error("Unable to find user with user UUID: {}", editRoleForUserRequestDTO.getUserUuid());
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
     }
 

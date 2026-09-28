@@ -2,7 +2,7 @@ package mh.michael.conference_scheduler.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import mh.michael.conference_scheduler.dto.AddRoleToUserRequestDTO;
+import mh.michael.conference_scheduler.dto.EditRoleForUserRequestDTO;
 import mh.michael.conference_scheduler.dto.UserWithoutMemberDTO;
 import mh.michael.conference_scheduler.security.JwtUserDetails;
 import mh.michael.conference_scheduler.service.UserService;
@@ -44,8 +44,8 @@ public class UserRestController {
 
   @PutMapping("/addRole")
   @PreAuthorize("hasRole('ADMIN')")
-  public UserWithoutMemberDTO addRoleToUser(@Valid @RequestBody AddRoleToUserRequestDTO addRoleToUserRequestDTO) {
+  public UserWithoutMemberDTO addRoleToUser(@Valid @RequestBody EditRoleForUserRequestDTO editRoleForUserRequestDTO) {
     log.debug("UserRestController::addRoleToUser");
-    return userService.addRoleToUser(addRoleToUserRequestDTO);
+    return userService.addRoleToUser(editRoleForUserRequestDTO);
   }
 }

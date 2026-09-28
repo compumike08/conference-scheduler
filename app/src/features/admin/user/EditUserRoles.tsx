@@ -100,7 +100,7 @@ function EditUserRoles() {
 
     const data: AddRoleToUserRequest = {
       userUuid,
-      newRole: roleToAdd as UserRoleNoMemberOrUser
+      role: roleToAdd as UserRoleNoMemberOrUser
     };
     
     try {
