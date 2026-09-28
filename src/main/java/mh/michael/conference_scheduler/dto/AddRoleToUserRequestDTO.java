@@ -5,6 +5,7 @@ import lombok.*;
 import mh.michael.conference_scheduler.annotations.ValidUuid;
 import mh.michael.conference_scheduler.annotations.ValueOfEnum;
 import mh.michael.conference_scheduler.constants.EUserRole;
+import mh.michael.conference_scheduler.constants.EUserRoleNoMemberOrUser;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,6 +18,6 @@ public class AddRoleToUserRequestDTO {
   String userUuid;
 
   @NotBlank(message = "New role is required")
-  @ValueOfEnum(enumClass = EUserRole.class, message = "Invalid role")
+  @ValueOfEnum(enumClass = EUserRoleNoMemberOrUser.class, message = "Invalid role")
   String newRole;
 }
