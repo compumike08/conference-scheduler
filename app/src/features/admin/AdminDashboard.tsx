@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import type { SerializedError } from "@reduxjs/toolkit";
 import { useNavigate } from "react-router";
-import { Alert, Box, Button, FormControl, FormHelperText, Grid, Input, InputLabel, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, FormControl, FormControlLabel, FormHelperText, FormLabel, Grid, Input, InputLabel, Radio, RadioGroup, Stack, Typography } from "@mui/material";
 import { DataGrid, type GridColDef, type GridRowParams } from '@mui/x-data-grid';
 import { useAppDispatch, useAppSelector, type RootState } from "../../app/store";
 import { clearSearchByUsernameResults, searchByUsernameAction } from "./adminDashboardSlice";
 import { REDUX_ACTION_STATUS, UNKNOWN_ERR_MSG } from "../../constants/globalConstants";
 import type { UserRequestResponse } from "../../api/userAPI";
 import { selectMatchingUsersListWithId } from "./adminDashboardSelectors";
+import { UsersSearchTypeOptions, type UsersSearchTypeOptionCode } from "./adminDashboardConstants";
 
 function AdminDashboard() {
   const dispatch = useAppDispatch();
@@ -21,6 +22,8 @@ function AdminDashboard() {
 
   const matchingUsersList = useAppSelector((state: RootState) => selectMatchingUsersListWithId(state));
   const { searchByUsernameRequestStatus } = useAppSelector((state: RootState) => state.adminDashboard);
+
+  const [searchTypeSelectionCode, setSearchTypeSelectionCode] = useState<UsersSearchTypeOptionCode>(UsersSearchTypeOptions.OPT_USERNAME.code);
 
   const [username, setUsername] = useState("");
   const [usernameValidationErrMsg, setUsernameValidationErrMsg] = useState<string | null>(null);
@@ -75,6 +78,10 @@ function AdminDashboard() {
     }
   };
 
+  const handleSearchTypeRadioOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTypeSelectionCode((event.target as HTMLInputElement).value as UsersSearchTypeOptionCode);
+  };
+
   const columns: GridColDef<Array<UserRequestResponse>[number]>[] = [
     {
       field: 'username',
@@ -118,6 +125,28 @@ function AdminDashboard() {
             <Typography variant="h5" component="div">
               Admin Dashboard
             </Typography>
+
+            <Box component="form">
+              <Grid size={{
+                xs: 12,
+                sm: 12,
+                md: 8,
+                lg: 6
+              }}>
+                <FormControl variant="standard" fullWidth required>
+                  <FormLabel id="input-search-type-label">Search By</FormLabel>
+                  <RadioGroup
+                    aria-labelledby="input-search-type-label"
+                    value={searchTypeSelectionCode}
+                    name="input-search-type-radio-buttons-group"
+                    onChange={handleSearchTypeRadioOnChange}
+                  >
+                    <FormControlLabel value={UsersSearchTypeOptions.OPT_USERNAME.code} control={<Radio />} label={UsersSearchTypeOptions.OPT_USERNAME.label} />
+                    <FormControlLabel value={UsersSearchTypeOptions.OPT_USER_ROLE.code} control={<Radio />} label={UsersSearchTypeOptions.OPT_USER_ROLE.label} />
+                  </RadioGroup>
+                </FormControl>
+              </Grid>
+            </Box>
 
             <Box component="form">
               <Typography variant="h6" component="div">
