@@ -48,4 +48,11 @@ public class UserRestController {
     log.debug("UserRestController::addRoleToUser");
     return userService.addRoleToUser(editRoleForUserRequestDTO);
   }
+
+  @PutMapping("/removeRole")
+  @PreAuthorize("hasRole('ADMIN')")
+  public UserWithoutMemberDTO removeRoleFromUser(@Valid @RequestBody EditRoleForUserRequestDTO editRoleForUserRequestDTO) {
+    log.debug("UserRestController::removeRoleFromUser");
+    return userService.removeRoleFromUser(editRoleForUserRequestDTO);
+  }
 }

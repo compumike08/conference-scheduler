@@ -186,4 +186,45 @@ public class UserService {
 
     return convertUserToUserWithoutMemberDTO(savedUser);
   }
+
+  @Transactional
+  public UserWithoutMemberDTO removeRoleFromUser(EditRoleForUserRequestDTO editRoleForUserRequestDTO) {
+    UUID uuid = UUID.fromString(editRoleForUserRequestDTO.getUserUuid());
+    String userRoleToRemoveString = editRoleForUserRequestDTO.getRole();
+    EUserRole userRoleToRemoveEnum = EUserRole.valueOf(userRoleToRemoveString);
+
+    Optional<User> optUser = userRepository.findByUserUuid(uuid);
+
+    if (optUser.isEmpty()) {
+      log.error("Unable to find user with user UUID: {}", editRoleForUserRequestDTO.getUserUuid());
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+    }
+
+    User user = optUser.get();
+
+    if (!user.getRoles().stream().map(UserRole::getName).toList().contains(userRoleToRemoveEnum)) {
+      log.warn("Unable to remove user role with name of '{}' from user '{}', as user does not currently have that role", userRoleToRemoveEnum.name(), user.getUserUuid());
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Unable to remove role, as the selected user does not currently have that role");
+    }
+
+    if (userRoleToRemoveEnum.equals(EUserRole.ROLE_ADMIN)) {
+      Integer numOfAdmins = userRepository.countUsersByRolesName(EUserRole.ROLE_ADMIN);
+
+      if (numOfAdmins <= 1) {
+        String errMsg = "Cannot remove the admin role from the last admin user in the system";
+        log.warn(errMsg);
+        throw new ResponseStatusException(HttpStatus.CONFLICT, errMsg);
+      }
+    }
+
+    UserRole selectedUserRole = user.getRoles().stream()
+      .filter(role -> role.getName().equals(userRoleToRemoveEnum))
+      .findFirst()
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG));
+
+    user.getRoles().remove(selectedUserRole);
+
+    User savedUser = userRepository.save(user);
+    return convertUserToUserWithoutMemberDTO(savedUser);
+  }
 }

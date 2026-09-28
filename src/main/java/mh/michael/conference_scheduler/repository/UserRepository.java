@@ -1,5 +1,6 @@
 package mh.michael.conference_scheduler.repository;
 
+import mh.michael.conference_scheduler.constants.EUserRole;
 import mh.michael.conference_scheduler.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -16,5 +17,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
   List<User> findByUsernameContainingIgnoreCaseOrderByUsernameAsc(String partialUsername);
   Boolean existsByUsername(String username);
   Boolean existsByEmail(String email);
+  Integer countUsersByRolesName(EUserRole matchRole);
   long count();
 }
