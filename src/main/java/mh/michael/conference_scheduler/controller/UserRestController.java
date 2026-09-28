@@ -42,6 +42,13 @@ public class UserRestController {
     return userService.searchUserByUsername(searchUsername);
   }
 
+  @GetMapping("/searchByUserRole")
+  @PreAuthorize("hasRole('ADMIN')")
+  public List<UserWithoutMemberDTO> searchByUserRole(@RequestParam(name = "searchRole") String searchRole) {
+    log.debug("UserRestController::searchByUserRole");
+    return userService.searchUserByRoleName(searchRole);
+  }
+
   @PutMapping("/addRole")
   @PreAuthorize("hasRole('ADMIN')")
   public UserWithoutMemberDTO addRoleToUser(@Valid @RequestBody EditRoleForUserRequestDTO editRoleForUserRequestDTO) {

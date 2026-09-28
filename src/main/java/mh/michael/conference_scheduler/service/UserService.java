@@ -156,6 +156,30 @@ public class UserService {
   }
 
   @Transactional
+  public List<UserWithoutMemberDTO> searchUserByRoleName(String searchRoleName) {
+    if (searchRoleName == null || searchRoleName.isBlank()) {
+      String errMsg =  "Role is null or empty";
+      log.error(errMsg);
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errMsg);
+    }
+
+    EUserRole role;
+
+    try {
+      role = EUserRole.valueOf(searchRoleName);
+    } catch (IllegalArgumentException e) {
+      log.error("Invalid search role name: {}", searchRoleName, e);
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid role");
+    }
+
+    List<User> matchingUserRolesList = userRepository.findByRoles_name(role);
+
+    return matchingUserRolesList.stream()
+      .map(ConvertDTOUtil::convertUserToUserWithoutMemberDTO)
+      .toList();
+  }
+
+  @Transactional
   public UserWithoutMemberDTO addRoleToUser(EditRoleForUserRequestDTO editRoleForUserRequestDTO) {
     UUID uuid = UUID.fromString(editRoleForUserRequestDTO.getUserUuid());
     String newUserRoleString = editRoleForUserRequestDTO.getRole();
