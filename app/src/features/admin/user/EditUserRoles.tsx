@@ -4,10 +4,10 @@ import { useParams } from "react-router";
 import type { SerializedError } from "@reduxjs/toolkit";
 import { useSnackbar } from "notistack";
 import { useAppDispatch, useAppSelector, type RootState } from "../../../app/store";
-import { addRoleToSelectedUserAction, clearGetSelectedUserResults, getSelectedUserAction } from "../adminDashboardSlice";
+import { addRoleToSelectedUserAction, clearGetSelectedUserResults, getSelectedUserAction, removeRoleFromSelectedUserAction } from "../adminDashboardSlice";
 import { REDUX_ACTION_STATUS, UNKNOWN_ERR_MSG } from "../../../constants/globalConstants";
 import { UserRoleNoMemberOrUser } from "../../../constants/userConstants";
-import type { AddRoleToUserRequest } from "../../../api/userAPI";
+import type { EditRoleForUserRequest } from "../../../api/userAPI";
 
 function EditUserRoles() {
   const dispatch = useAppDispatch();
@@ -17,11 +17,17 @@ function EditUserRoles() {
   const { enqueueSnackbar } = useSnackbar();
 
   const [isAddRoleModalOpen, setIsAddRoleModalOpen] = useState(false);
+  const [isRemoveRoleModalOpen, setIsRemoveRoleModalOpen] = useState(false);
   const [roleToAdd, setRoleToAdd] = useState<UserRoleNoMemberOrUser | null>(null);
-  const [numOfAvailableRoles, setNumOfAvailableRoles] = useState(0);
-  const [isServerError, setIsServerError] = useState(false);
-  const [serverErrorMsg, setServerErrorMsg] = useState("");
+  const [roleToRemove, setRoleToRemove] = useState<UserRoleNoMemberOrUser | null>(null);
+  const [numOfAvailableRolesToAdd, setNumOfAvailableRolesToAdd] = useState(0);
+  const [numOfAvailableRolesToRemove, setNumOfAvailableRolesToRemove] = useState(0);
+  const [isServerErrorAddRole, setIsServerErrorAddRole] = useState(false);
+  const [serverErrorMsgAddRole, setServerErrorMsgAddRole] = useState("");
+  const [isServerErrorRemoveRole, setIsServerErrorRemoveRole] = useState(false);
+  const [serverErrorMsgRemoveRole, setServerErrorMsgRemoveRole] = useState("");
   const [roleToAddValidationError, setRoleToAddValidationError] = useState<string | null>(null);
+  const [roleToRemoveValidationError, setRoleToRemoveValidationError] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -43,39 +49,67 @@ function EditUserRoles() {
 
   useEffect(() => {
     if (roleToAdd === null) {
-      const numOfAvailableRolesLocal = getAvailableRoles().length;
-      setNumOfAvailableRoles(numOfAvailableRolesLocal);
+      const numOfAvailableRolesToAddLocal = getAvailableRolesToAdd().length;
+      setNumOfAvailableRolesToAdd(numOfAvailableRolesToAddLocal);
     }
   }, [selectedUser, roleToAdd]);
+
+  useEffect(() => {
+    if (roleToRemove === null) {
+      const numOfAvailableRolesToRemoveLocal = getAvailableRolesToRemove().length;
+      setNumOfAvailableRolesToRemove(numOfAvailableRolesToRemoveLocal);
+    }
+  }, [selectedUser, roleToRemove]);
 
   const handleAddRoleOpenModal = () => {
     setIsAddRoleModalOpen(true);
   };
 
   const handleAddRoleCloseModal = () => {
-    reinitializeAllOfForm();
+    reinitializeAllOfAddRoleForm();
     setIsAddRoleModalOpen(false);
   }
 
-  const handleRemoveRoleOpenModal = () => {
-
+  const handleRemoveRoleCloseModal = () => {
+    reinitializeAllOfRemoveRoleForm();
+    setIsRemoveRoleModalOpen(false);
   };
 
-  const reinitializeAllOfForm = () => {
-    reintializeErrors();
-    reinitializeFormValues();
-  }
+  const handleRemoveRoleOpenModal = () => {
+    setIsRemoveRoleModalOpen(true);
+  };
 
-  const reintializeErrors = () => {
-    setIsServerError(false);
-    setServerErrorMsg("");
-  }
+  const reinitializeAllOfRemoveRoleForm = () => {
+    reintializeErrorsRemoveRoleForm();
+    reinitializeRemoveFormValues();
+  };
 
-  const reinitializeFormValues = () => {
+  const reinitializeAllOfAddRoleForm = () => {
+    reintializeErrorsAddRoleForm();
+    reinitializeAddFormValues();
+  };
+
+  const reintializeErrorsAddRoleForm = () => {
+    setIsServerErrorAddRole(false);
+    setServerErrorMsgAddRole("");
+  };
+
+  const reinitializeAddFormValues = () => {
     setRoleToAdd(null);
 
     setRoleToAddValidationError(null);
-  }
+  };
+
+  const reintializeErrorsRemoveRoleForm = () => {
+    setIsServerErrorRemoveRole(false);
+    setServerErrorMsgRemoveRole("");
+  };
+
+  const reinitializeRemoveFormValues = () => {
+    setRoleToRemove(null);
+
+    setRoleToRemoveValidationError(null);
+  };
 
   const handleSubmitAddRoleForm = async (event: SubmitEvent) => {
     event.preventDefault();
@@ -84,12 +118,12 @@ function EditUserRoles() {
       throw new Error(`Value of userUuid is null/undefined when handleSubmitAddRoleForm is invoked: ${userUuid}`);
     }
 
-    setIsServerError(false);
-    setServerErrorMsg("");
+    setIsServerErrorAddRole(false);
+    setServerErrorMsgAddRole("");
 
     let isFrontendError = false;
 
-    if (roleToAdd && roleToAdd.length <= 0) {
+    if (!roleToAdd) {
       setRoleToAddValidationError("Role To Add is required");
       isFrontendError = true;
     }
@@ -98,7 +132,7 @@ function EditUserRoles() {
       return;
     }
 
-    const data: AddRoleToUserRequest = {
+    const data: EditRoleForUserRequest = {
       userUuid,
       role: roleToAdd as UserRoleNoMemberOrUser
     };
@@ -106,30 +140,90 @@ function EditUserRoles() {
     try {
       await dispatch(addRoleToSelectedUserAction(data)).unwrap();
 
-      reinitializeFormValues();
+      reinitializeAddFormValues();
       enqueueSnackbar("Role added to user successfully", { variant: "success" });
       handleAddRoleCloseModal();
     } catch (err) {
       const error = err as SerializedError;
-      setIsServerError(true);
+      setIsServerErrorAddRole(true);
 
       if (error.message && error.message.length > 0) {
-        setServerErrorMsg(error.message);
+        setServerErrorMsgAddRole(error.message);
       } else {
         console.log(error);
-        setServerErrorMsg(UNKNOWN_ERR_MSG);
+        setServerErrorMsgAddRole(UNKNOWN_ERR_MSG);
       }
     }
   }
+
+  const handleSubmitRemoveRoleForm = async (event: SubmitEvent) => {
+    event.preventDefault();
+
+    if (userUuid === null || userUuid === undefined) {
+      throw new Error(`Value of userUuid is null/undefined when handleSubmitRemoveRoleForm is invoked: ${userUuid}`);
+    }
+
+    setIsServerErrorRemoveRole(false);
+    setServerErrorMsgRemoveRole("");
+
+    let isFrontendError = false;
+
+    if (!roleToRemove) {
+      setRoleToRemoveValidationError("Role To Remove is required");
+      isFrontendError = true;
+    }
+
+    if (isFrontendError) {
+      return;
+    }
+
+    const data: EditRoleForUserRequest = {
+      userUuid,
+      role: roleToRemove as UserRoleNoMemberOrUser
+    };
+    
+    try {
+      await dispatch(removeRoleFromSelectedUserAction(data)).unwrap();
+
+      reinitializeRemoveFormValues();
+      enqueueSnackbar("Role removed from user successfully", { variant: "success" });
+      handleRemoveRoleCloseModal();
+    } catch (err) {
+      const error = err as SerializedError;
+      setIsServerErrorRemoveRole(true);
+
+      if (error.message && error.message.length > 0) {
+        setServerErrorMsgRemoveRole(error.message);
+      } else {
+        console.log(error);
+        setServerErrorMsgRemoveRole(UNKNOWN_ERR_MSG);
+      }
+    }
+  };
 
   const handleChangeAddRoleSelection = (event: SelectChangeEvent<UserRoleNoMemberOrUser>) => {
     setRoleToAdd(event.target.value);
   }
 
-  const getAvailableRoles = () => {
+  const handleChangeRemoveRoleSelection = (event: SelectChangeEvent<UserRoleNoMemberOrUser>) => {
+    setRoleToRemove(event.target.value);
+  }
+
+  const getAvailableRolesToAdd = () => {
     if (selectedUser !== null) {
       const userRoleToAddOptions = Object.values(UserRoleNoMemberOrUser).filter(role => !selectedUser.roles.includes(role));
       return userRoleToAddOptions.map(role => {
+        return role;
+      });
+    } else {
+      return [];
+    }
+  };
+
+  const getAvailableRolesToRemove = () => {
+    if (selectedUser !== null) {
+      const userRoleToRemoveOptions = Object.values(UserRoleNoMemberOrUser).filter(role => selectedUser.roles.includes(role));
+      return userRoleToRemoveOptions.map(role => {
         return role;
       });
     } else {
@@ -143,8 +237,8 @@ function EditUserRoles() {
         <Dialog open={isAddRoleModalOpen} onClose={handleAddRoleCloseModal} closeAfterTransition={false}>
           <DialogTitle>Add User Role</DialogTitle>
           <DialogContent>
-            {isServerError && (
-              <Alert sx={{ marginBottom: 1 }} color="error">{serverErrorMsg}</Alert>
+            {isServerErrorAddRole && (
+              <Alert sx={{ marginBottom: 1 }} color="error">{serverErrorMsgAddRole}</Alert>
             )}
             <DialogContentText>
               Select the role to add for this user
@@ -161,7 +255,7 @@ function EditUserRoles() {
                 >
                   {Object.values(UserRoleNoMemberOrUser).filter(role => !selectedUser.roles.includes(role))
                     .map(role => (
-                      <MenuItem key={`${role}-select-option`} value={role}>{role}</MenuItem>
+                      <MenuItem key={`${role}-add-select-option`} value={role}>{role}</MenuItem>
                     ))
                   }
                 </Select>
@@ -174,6 +268,46 @@ function EditUserRoles() {
           <DialogActions>
             <Button variant="outlined" onClick={handleAddRoleCloseModal}>Cancel</Button>
             <Button disabled={roleToAdd === null} variant="contained" type="submit" form="addRole-form">
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+      {selectedUser !== null && (
+        <Dialog open={isRemoveRoleModalOpen} onClose={handleRemoveRoleCloseModal} closeAfterTransition={false}>
+          <DialogTitle>Remove User Role</DialogTitle>
+          <DialogContent>
+            {isServerErrorRemoveRole && (
+              <Alert sx={{ marginBottom: 1 }} color="error">{serverErrorMsgRemoveRole}</Alert>
+            )}
+            <DialogContentText>
+              Select the role to remove for this user
+            </DialogContentText>
+            <Box component="form" onSubmit={handleSubmitRemoveRoleForm} id="removeRole-form" sx={{ marginTop: 1 }}>
+              <FormControl fullWidth error={roleToRemoveValidationError !== null} size="small">
+                <InputLabel id="removeRole-form-roles-label">Role To Remove</InputLabel>
+                <Select
+                  labelId="removeRole-form-roles-label"
+                  id="removeRole-form-roles-select"
+                  value={roleToRemove !== null && selectedUser.roles.includes(roleToRemove) ? roleToRemove : ''}
+                  label="Role To Remove"
+                  onChange={handleChangeRemoveRoleSelection}
+                >
+                  {Object.values(UserRoleNoMemberOrUser).filter(role => selectedUser.roles.includes(role))
+                    .map(role => (
+                      <MenuItem key={`${role}-remove-select-option`} value={role}>{role}</MenuItem>
+                    ))
+                  }
+                </Select>
+                {roleToRemoveValidationError !== null && (
+                  <FormHelperText id="removeRole-form-roles-error">{roleToRemoveValidationError}</FormHelperText>
+                )}
+              </FormControl>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button variant="outlined" onClick={handleRemoveRoleCloseModal}>Cancel</Button>
+            <Button disabled={roleToRemove === null} variant="contained" type="submit" form="removeRole-form">
               Save
             </Button>
           </DialogActions>
@@ -223,8 +357,8 @@ function EditUserRoles() {
                   <Grid container sx={{
                     justifyContent: "space-between"
                   }}>
-                    <Button disabled={numOfAvailableRoles === 0} onClick={handleAddRoleOpenModal} variant="contained">Add Role</Button>
-                    <Button disabled={numOfAvailableRoles === Object.values(UserRoleNoMemberOrUser).length} color="error" onClick={handleRemoveRoleOpenModal} variant="contained">Remove Role</Button>
+                    <Button disabled={numOfAvailableRolesToAdd === 0} onClick={handleAddRoleOpenModal} variant="contained">Add Role</Button>
+                    <Button disabled={numOfAvailableRolesToRemove === 0} color="error" onClick={handleRemoveRoleOpenModal} variant="contained">Remove Role</Button>
                   </Grid>
                 </>
               )}

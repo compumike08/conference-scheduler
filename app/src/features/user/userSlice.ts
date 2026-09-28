@@ -6,7 +6,7 @@ import { getCurrentUser } from '../../api/userAPI';
 import { logoutAction } from '../login/loginSlice';
 import { createMemberAndReturnUpdatedUserAction } from '../member/memberSlice';
 import type { UserWithMemberResponse } from '../../api/memberAPI';
-import { addRoleToSelectedUserAction } from '../admin/adminDashboardSlice';
+import { addRoleToSelectedUserAction, removeRoleFromSelectedUserAction } from '../admin/adminDashboardSlice';
 
 export interface UserState {
     getCurrentUserStatus: REDUX_ACTION_STATUS,
@@ -54,6 +54,11 @@ export const userSlice = createSlice({
         }
       })
       .addCase(addRoleToSelectedUserAction.fulfilled, (state, action: PayloadAction<UserRequestResponse>) => {
+        if (state.currentUser && state.currentUser.userUuid === action.payload.userUuid) {
+          state.currentUser = action.payload;
+        }
+      })
+      .addCase(removeRoleFromSelectedUserAction.fulfilled, (state, action: PayloadAction<UserRequestResponse>) => {
         if (state.currentUser && state.currentUser.userUuid === action.payload.userUuid) {
           state.currentUser = action.payload;
         }

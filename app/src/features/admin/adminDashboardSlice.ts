@@ -1,12 +1,13 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { REDUX_ACTION_STATUS } from '../../constants/globalConstants';
-import { addRoleToUser, getUserByUuid, searchByUsername, type AddRoleToUserRequest, type UserRequestResponse } from '../../api/userAPI';
+import { addRoleToUser, getUserByUuid, removeRoleFromUser, searchByUsername, type EditRoleForUserRequest, type UserRequestResponse } from '../../api/userAPI';
 
 export interface AdminDashboardState {
   searchByUsernameRequestStatus: REDUX_ACTION_STATUS,
   getSelectedUserRequestStatus: REDUX_ACTION_STATUS,
   addRoleToSelectedUserRequestStatus: REDUX_ACTION_STATUS,
+  removeRoleFromSelectedUserRequestStatus: REDUX_ACTION_STATUS,
   matchingUsersList: Array<UserRequestResponse>,
   selectedUser: UserRequestResponse | null;
 }
@@ -15,6 +16,7 @@ const initialState: AdminDashboardState = {
   searchByUsernameRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
   getSelectedUserRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
   addRoleToSelectedUserRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
+  removeRoleFromSelectedUserRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
   matchingUsersList: [],
   selectedUser: null
 };
@@ -35,8 +37,15 @@ export const getSelectedUserAction = createAsyncThunk(
 
 export const addRoleToSelectedUserAction = createAsyncThunk(
   "adminDashboard/addRoleToSelectedUserAction",
-  async (data: AddRoleToUserRequest) => {
+  async (data: EditRoleForUserRequest) => {
     return await addRoleToUser(data);
+  }
+);
+
+export const removeRoleFromSelectedUserAction = createAsyncThunk(
+  "adminDashboard/removeRoleFromSelectedUserAction",
+  async (data: EditRoleForUserRequest) => {
+    return await removeRoleFromUser(data);
   }
 );
 
@@ -84,6 +93,16 @@ export const adminDashboardSlice = createSlice({
       })
       .addCase(addRoleToSelectedUserAction.rejected, (state) => {
         state.addRoleToSelectedUserRequestStatus = REDUX_ACTION_STATUS.ERROR_STATUS;
+      })
+      .addCase(removeRoleFromSelectedUserAction.fulfilled, (state, action: PayloadAction<UserRequestResponse>) => {
+        state.removeRoleFromSelectedUserRequestStatus = REDUX_ACTION_STATUS.SUCCESS_STATUS;
+        state.selectedUser = action.payload;
+      })
+      .addCase(removeRoleFromSelectedUserAction.pending, (state) => {
+        state.removeRoleFromSelectedUserRequestStatus = REDUX_ACTION_STATUS.PENDING_STATUS;
+      })
+      .addCase(removeRoleFromSelectedUserAction.rejected, (state) => {
+        state.removeRoleFromSelectedUserRequestStatus = REDUX_ACTION_STATUS.ERROR_STATUS;
       });
   }
 });

@@ -10,7 +10,7 @@ export interface UserRequestResponse {
   memberUuid: string
 }
 
-export interface AddRoleToUserRequest {
+export interface EditRoleForUserRequest {
   userUuid: string,
   role: UserRoleNoMemberOrUser
 }
@@ -73,8 +73,35 @@ export async function getUserByUuid(searchUuid: string): Promise<UserRequestResp
   }
 }
 
-export async function addRoleToUser(data: AddRoleToUserRequest): Promise<UserRequestResponse> {
+export async function addRoleToUser(data: EditRoleForUserRequest): Promise<UserRequestResponse> {
   const url = `/api/user/addRole`;
+  try {
+    const response = await axios.put(url, data);
+    return response.data;
+  } catch (err) {
+    console.log(err);
+
+    if (axios.isAxiosError(err)) {
+      if (err && err.response && err.response.data.validationErrors) {
+        const errMsgAry = [];
+        for (const key in err.response.data.validationErrors) {
+          if (Object.hasOwn(err.response.data.validationErrors, key)) {
+            errMsgAry.push(err.response.data.validationErrors[key]);
+          }
+        }
+
+        throw new Error(errMsgAry.join('; '));
+      } else if (err && err.response && err.response.data.error) {
+        throw new Error(err.response.data.error);
+      }
+    }
+
+    throw new Error(UNKNOWN_ERR_MSG);
+  }
+}
+
+export async function removeRoleFromUser(data: EditRoleForUserRequest): Promise<UserRequestResponse> {
+  const url = `/api/user/removeRole`;
   try {
     const response = await axios.put(url, data);
     return response.data;
