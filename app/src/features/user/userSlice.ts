@@ -6,6 +6,7 @@ import { getCurrentUser } from '../../api/userAPI';
 import { logoutAction } from '../login/loginSlice';
 import { createMemberAndReturnUpdatedUserAction } from '../member/memberSlice';
 import type { UserWithMemberResponse } from '../../api/memberAPI';
+import { addRoleToSelectedUserAction } from '../admin/adminDashboardSlice';
 
 export interface UserState {
     getCurrentUserStatus: REDUX_ACTION_STATUS,
@@ -50,6 +51,11 @@ export const userSlice = createSlice({
           state.currentUser.memberUuid = action.payload.member.memberUuid;
         } else {
           throw new Error("userSlice.currentUser is null/undefined when createMemberAndReturnUpdatedUserAction.fulfilled triggers");
+        }
+      })
+      .addCase(addRoleToSelectedUserAction.fulfilled, (state, action: PayloadAction<UserRequestResponse>) => {
+        if (state.currentUser && state.currentUser.userUuid === action.payload.userUuid) {
+          state.currentUser = action.payload;
         }
       });
   }

@@ -1,11 +1,12 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { REDUX_ACTION_STATUS } from '../../constants/globalConstants';
-import { getUserByUuid, searchByUsername, type UserRequestResponse } from '../../api/userAPI';
+import { addRoleToUser, getUserByUuid, searchByUsername, type AddRoleToUserRequest, type UserRequestResponse } from '../../api/userAPI';
 
 export interface AdminDashboardState {
   searchByUsernameRequestStatus: REDUX_ACTION_STATUS,
   getSelectedUserRequestStatus: REDUX_ACTION_STATUS,
+  addRoleToSelectedUserRequestStatus: REDUX_ACTION_STATUS,
   matchingUsersList: Array<UserRequestResponse>,
   selectedUser: UserRequestResponse | null;
 }
@@ -13,6 +14,7 @@ export interface AdminDashboardState {
 const initialState: AdminDashboardState = {
   searchByUsernameRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
   getSelectedUserRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
+  addRoleToSelectedUserRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
   matchingUsersList: [],
   selectedUser: null
 };
@@ -28,6 +30,13 @@ export const getSelectedUserAction = createAsyncThunk(
   "adminDashboard/getSelectedUserAction",
   async (searchUuid: string) => {
     return await getUserByUuid(searchUuid);
+  }
+);
+
+export const addRoleToSelectedUserAction = createAsyncThunk(
+  "adminDashboard/addRoleToSelectedUserAction",
+  async (data: AddRoleToUserRequest) => {
+    return await addRoleToUser(data);
   }
 );
 
@@ -65,6 +74,16 @@ export const adminDashboardSlice = createSlice({
       })
       .addCase(getSelectedUserAction.rejected, (state) => {
         state.getSelectedUserRequestStatus = REDUX_ACTION_STATUS.ERROR_STATUS;
+      })
+      .addCase(addRoleToSelectedUserAction.fulfilled, (state, action: PayloadAction<UserRequestResponse>) => {
+        state.addRoleToSelectedUserRequestStatus = REDUX_ACTION_STATUS.SUCCESS_STATUS;
+        state.selectedUser = action.payload;
+      })
+      .addCase(addRoleToSelectedUserAction.pending, (state) => {
+        state.addRoleToSelectedUserRequestStatus = REDUX_ACTION_STATUS.PENDING_STATUS;
+      })
+      .addCase(addRoleToSelectedUserAction.rejected, (state) => {
+        state.addRoleToSelectedUserRequestStatus = REDUX_ACTION_STATUS.ERROR_STATUS;
       });
   }
 });
