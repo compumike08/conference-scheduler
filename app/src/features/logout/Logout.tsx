@@ -4,6 +4,7 @@ import type { SerializedError } from "@reduxjs/toolkit";
 import { useAppDispatch, useAppSelector, type RootState } from "../../app/store";
 import { logoutAction } from "../login/loginSlice";
 import { REDUX_ACTION_STATUS, UNKNOWN_ERR_MSG } from "../../constants/globalConstants";
+import { margin } from "@mui/system";
 
 function Logout() {
   const dispatch = useAppDispatch();
@@ -16,7 +17,7 @@ function Logout() {
   useEffect(() => {
     const logoutFunc = async () => {
       try {
-        await dispatch(logoutAction());
+        await dispatch(logoutAction()).unwrap();
       } catch (err) {
         const error = err as SerializedError;
         setIsServerError(true);
@@ -51,7 +52,7 @@ function Logout() {
           lg: 4
         }}>
           {isServerError && (
-            <Box>
+            <Box sx={{ marginTop: 1 }}>
               <Alert severity="error">{serverErrorMsg}</Alert>
             </Box>
           )}
