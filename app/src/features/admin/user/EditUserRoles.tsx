@@ -173,7 +173,7 @@ function EditUserRoles() {
           </DialogContent>
           <DialogActions>
             <Button variant="outlined" onClick={handleAddRoleCloseModal}>Cancel</Button>
-            <Button disabled={roleToAdd !== null && roleToAdd.length <= 0} variant="contained" type="submit" form="addRole-form">
+            <Button disabled={roleToAdd === null} variant="contained" type="submit" form="addRole-form">
               Save
             </Button>
           </DialogActions>
