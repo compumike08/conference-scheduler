@@ -80,13 +80,13 @@ function AdminDashboard() {
       field: 'username',
       headerName: 'Username',
       width: 150,
-      editable: false,
+      editable: false
     },
     {
       field: 'email',
       headerName: 'Email',
       width: 150,
-      editable: false,
+      editable: false
     },
     {
       field: 'rolesString',
@@ -94,6 +94,7 @@ function AdminDashboard() {
       editable: false,
       rowHeader: true,
       sortable: false,
+      filterable: false,
       width: 550,
       valueGetter: (_value, row) => row.roles.join("; ")
     }
