@@ -1,4 +1,4 @@
-import { Box, Button, FormControl, Grid, Input, InputLabel, Stack, Alert, Backdrop, CircularProgress, FormHelperText } from "@mui/material";
+import { Box, Button, FormControl, Grid, Input, InputLabel, Stack, Alert, Backdrop, CircularProgress, FormHelperText, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { useState } from "react";
 import type { SerializedError } from "@reduxjs/toolkit";
 import { useNavigate } from "react-router";
@@ -25,6 +25,8 @@ function Login() {
 
   const [usernameValidationErrMsg, setUsernameValidationErrMsg] = useState<string | null>(null);
   const [passwordValidationErrMsg, setPasswordValidationErrMsg] = useState<string | null>(null);
+
+  const [isRedirectToCreateMemberAlertOpen, setIsRedirectToCreateMemberAlertOpen] = useState(false);
 
   const reinitializeAllOfForm = () => {
     reintializeErrors();
@@ -75,7 +77,7 @@ function Login() {
       enqueueSnackbar("Logged in successfully", { variant: "success" });
 
       if (!currentUser.roles.includes(UserRole.ROLE_MEMBER)) {
-        navigate("/member");
+        setIsRedirectToCreateMemberAlertOpen(true);
       } else {
         // TODO: Redirect to '/about' for now; update later
         navigate("/about");
@@ -93,8 +95,44 @@ function Login() {
     }
   };
 
+  const handleDialogNo = () => {
+    setIsRedirectToCreateMemberAlertOpen(false);
+
+    // TODO: Redirect to '/about' for now; update later
+    navigate("/about");
+  };
+
+  const handleDialogYes = () => {
+    setIsRedirectToCreateMemberAlertOpen(false);
+
+    navigate("/member");
+  };
+
   return (
     <>
+      <Dialog
+        open={isRedirectToCreateMemberAlertOpen}
+        onClose={handleDialogNo}
+        aria-labelledby="alert-dialog-redirect-to-create-member--title"
+        aria-describedby="alert-dialog-redirect-to-create-member--description"
+        role="alertdialog"
+        closeAfterTransition={false}
+      >
+        <DialogTitle id="alert-dialog-redirect-to-create-member--title">
+          {"Do you want to create a member profile?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-redirect-to-create-member--description">
+            You are not currently a member. Do you want to create a member profile now?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogNo} autoFocus>
+            No
+          </Button>
+          <Button onClick={handleDialogYes}>Yes</Button>
+        </DialogActions>
+      </Dialog>
       <Backdrop
         sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
         open={authenticateRequestStatus === REDUX_ACTION_STATUS.PENDING_STATUS}
