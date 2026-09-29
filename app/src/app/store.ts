@@ -5,6 +5,7 @@ import loginReducer from '../features/login/loginSlice';
 import userReducer from '../features/user/userSlice';
 import memberReducer from '../features/member/memberSlice';
 import adminDashboardReducer from '../features/admin/adminDashboardSlice';
+import locationReducer from '../features/location/locationSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,7 +13,8 @@ export const store = configureStore({
     login: loginReducer,
     user: userReducer,
     member: memberReducer,
-    adminDashboard: adminDashboardReducer
+    adminDashboard: adminDashboardReducer,
+    location: locationReducer
   },
 })
 

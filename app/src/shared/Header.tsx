@@ -18,6 +18,7 @@ function Header() {
   const { roles = [] } = currentUser ?? {};
   const isAdminUser = roles.includes(UserRole.ROLE_ADMIN);
   const isMemberUser = roles.includes(UserRole.ROLE_MEMBER);
+  const isSchedulerUser = roles.includes(UserRole.ROLE_SCHEDULER);
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -66,6 +67,10 @@ function Header() {
     {
       title: 'Admin - Edit User Roles',
       path: '/admin/user/:userUuid'
+    },
+    {
+      title: 'Locations',
+      path: '/locationList'
     }
   ];
 
@@ -101,6 +106,10 @@ function Header() {
 
   if (isLoggedIn && !isMemberUser) {
     routeArray.push(ROUTE_CONST[5].path);
+  }
+
+  if (isAdminUser || isSchedulerUser) {
+    routeArray.push(ROUTE_CONST[8].path);
   }
 
   const routeMatch = useRouteMatch(routeArray);
@@ -160,6 +169,15 @@ function Header() {
                   </MenuItem>
                 )}
 
+                {(isAdminUser || isSchedulerUser) && (
+                  <MenuItem
+                    selected={currentTab === ROUTE_CONST[8].path}
+                    onClick={() => handleMenuClick(ROUTE_CONST[8].path)}
+                  >
+                    {ROUTE_CONST[8].title}
+                  </MenuItem>
+                )}
+
                 {isLoggedIn && !isMemberUser && (
                   <MenuItem
                     selected={currentTab === ROUTE_CONST[5].path}
@@ -196,6 +214,9 @@ function Header() {
               <Tab label={ROUTE_CONST[1].title} value={ROUTE_CONST[1].path} to={ROUTE_CONST[1].path} component={Link} />
               {isAdminUser && (
                 <Tab label={ROUTE_CONST[6].title} value={ROUTE_CONST[6].path} to={ROUTE_CONST[6].path} component={Link} />
+              )}
+              {(isAdminUser || isSchedulerUser) && (
+                <Tab label={ROUTE_CONST[8].title} value={ROUTE_CONST[8].path} to={ROUTE_CONST[8].path} component={Link} />
               )}
               {isLoggedIn && !isMemberUser && (
                 <Tab label={ROUTE_CONST[5].title} value={ROUTE_CONST[5].path} to={ROUTE_CONST[5].path} component={Link} />

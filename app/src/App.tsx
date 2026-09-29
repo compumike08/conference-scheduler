@@ -14,11 +14,13 @@ import { UserRole } from "./constants/userConstants.ts";
 import { ProtectedRoute } from "./shared/ProtectedRoute.tsx";
 import AdminDashboard from "./features/admin/AdminDashboard.tsx";
 import EditUserRoles from "./features/admin/user/EditUserRoles.tsx";
+import LocationList from "./features/location/LocationList.tsx";
 
 const App = () => {
   const { currentUser } = useAppSelector((state: RootState) => state.user);
   const { roles = [] } = currentUser ?? {};
   const isAdminUser = roles.includes(UserRole.ROLE_ADMIN);
+  const isSchedulerUser = roles.includes(UserRole.ROLE_SCHEDULER);
 
   return (
     <BrowserRouter>
@@ -46,6 +48,14 @@ const App = () => {
             element={
               <ProtectedRoute isAuthenticated={isAdminUser}>
                 <EditUserRoles />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/locationList"
+            element={
+              <ProtectedRoute isAuthenticated={isAdminUser || isSchedulerUser}>
+                <LocationList />
               </ProtectedRoute>
             }
           />
