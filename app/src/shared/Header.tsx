@@ -71,6 +71,10 @@ function Header() {
     {
       title: 'Locations',
       path: '/locationList'
+    },
+    {
+      title: 'Locations - Add New Location',
+      path: '/createLocation'
     }
   ];
 
@@ -110,6 +114,10 @@ function Header() {
 
   if (isAdminUser || isSchedulerUser) {
     routeArray.push(ROUTE_CONST[8].path);
+  }
+
+  if (isAdminUser) {
+    routeArray.push(ROUTE_CONST[9].path);
   }
 
   const routeMatch = useRouteMatch(routeArray);

@@ -1,4 +1,4 @@
-import { Backdrop, CircularProgress, Grid, Box, Stack, Typography, Alert } from "@mui/material";
+import { Backdrop, CircularProgress, Grid, Box, Stack, Typography, Alert, Button } from "@mui/material";
 import { DataGrid, type GridColDef, type GridFilterModel, type GridSortModel } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
 import type { SerializedError } from "@reduxjs/toolkit";
@@ -7,6 +7,7 @@ import { selectLocationListWithId } from "./locationSelectors";
 import { REDUX_ACTION_STATUS, UNKNOWN_ERR_MSG } from "../../constants/globalConstants";
 import { clearLocationsList, getAllLocationsAction } from "./locationSlice";
 import type { Location } from "../../constants/locationConstants";
+import { useNavigate } from "react-router";
 
 const INITIAL_FILTER_MODEL: GridFilterModel = {
   items: [],
@@ -14,6 +15,7 @@ const INITIAL_FILTER_MODEL: GridFilterModel = {
 };
 
 function LocationList() {
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const locationsList = useAppSelector((state: RootState) => selectLocationListWithId(state));
   const { getAllLocationsRequestStatus } = useAppSelector((state: RootState) => state.location);
@@ -95,6 +97,10 @@ function LocationList() {
               <Typography variant="h5" component="div">
                 Locations
               </Typography>
+
+              <Box sx={{ marginTop: 1 }}>
+                <Button variant="contained" onClick={() => navigate("/createLocation")}>Add New Location</Button>
+              </Box>
 
               {isServerError && (
                 <Box sx={{ marginTop: 1 }}>
