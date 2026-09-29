@@ -29,6 +29,7 @@ public class LocationRestController {
   }
 
   @GetMapping("/allLocations")
+  @PreAuthorize("hasRole('ADMIN') or hasRole('SCHEDULER')")
   public List<LocationDTO> getAllLocations() {
     log.debug("LocationRestController::getAllLocations");
     return locationService.getAllLocations();
