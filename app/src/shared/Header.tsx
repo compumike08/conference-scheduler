@@ -55,8 +55,8 @@ function Header() {
       path: '/logout'
     },
     {
-      title: 'Member',
-      path: '/member'
+      title: 'Create Member',
+      path: '/createMember'
     },
     {
       title: 'Admin Dashboard',

@@ -105,7 +105,7 @@ function Login() {
   const handleDialogYes = () => {
     setIsRedirectToCreateMemberAlertOpen(false);
 
-    navigate("/member");
+    navigate("/createMember");
   };
 
   return (

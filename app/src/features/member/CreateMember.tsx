@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector, type RootState } from "../../app/store"
 import type { NewMemberRequest } from "../../api/memberAPI";
 import { createMemberAndReturnUpdatedUserAction } from "./memberSlice";
 
-function Member() {
+function CreateMember() {
   const dispatch = useAppDispatch();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -168,4 +168,4 @@ function Member() {
   )
 }
 
-export default Member;
+export default CreateMember;
