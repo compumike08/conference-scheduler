@@ -1,10 +1,11 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { REDUX_ACTION_STATUS } from '../../constants/globalConstants';
-import { addRoleToUser, getUserByUuid, removeRoleFromUser, searchByUsername, type EditRoleForUserRequest, type UserRequestResponse } from '../../api/userAPI';
+import { addRoleToUser, getUserByUuid, removeRoleFromUser, searchByUsername, searchByUserRole, type EditRoleForUserRequest, type UserRequestResponse } from '../../api/userAPI';
 
 export interface AdminDashboardState {
   searchByUsernameRequestStatus: REDUX_ACTION_STATUS,
+  searchByUserRoleRequestStatus: REDUX_ACTION_STATUS,
   getSelectedUserRequestStatus: REDUX_ACTION_STATUS,
   addRoleToSelectedUserRequestStatus: REDUX_ACTION_STATUS,
   removeRoleFromSelectedUserRequestStatus: REDUX_ACTION_STATUS,
@@ -14,6 +15,7 @@ export interface AdminDashboardState {
 
 const initialState: AdminDashboardState = {
   searchByUsernameRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
+  searchByUserRoleRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
   getSelectedUserRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
   addRoleToSelectedUserRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
   removeRoleFromSelectedUserRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
@@ -25,6 +27,13 @@ export const searchByUsernameAction = createAsyncThunk(
   "adminDashboard/searchByUsernameAction",
   async (searchUsername: string) => {
     return await searchByUsername(searchUsername);
+  }
+);
+
+export const searchByUserRoleAction = createAsyncThunk(
+  "adminDashboard/searchByUserRoleAction",
+  async (searchRole: string) => {
+    return await searchByUserRole(searchRole);
   }
 );
 
@@ -53,8 +62,9 @@ export const adminDashboardSlice = createSlice({
   name: "adminDashboard",
   initialState,
   reducers: {
-    clearSearchByUsernameResults: (state) => {
+    clearSearchForUsersResults: (state) => {
       state.searchByUsernameRequestStatus = REDUX_ACTION_STATUS.IDLE_STATUS;
+      state.searchByUserRoleRequestStatus = REDUX_ACTION_STATUS.IDLE_STATUS;
       state.matchingUsersList = [];
     },
     clearGetSelectedUserResults: (state) => {
@@ -73,6 +83,16 @@ export const adminDashboardSlice = createSlice({
       })
       .addCase(searchByUsernameAction.rejected, (state) => {
         state.searchByUsernameRequestStatus = REDUX_ACTION_STATUS.ERROR_STATUS;
+      })
+      .addCase(searchByUserRoleAction.fulfilled, (state, action: PayloadAction<Array<UserRequestResponse>>) => {
+        state.searchByUserRoleRequestStatus = REDUX_ACTION_STATUS.SUCCESS_STATUS;
+        state.matchingUsersList = action.payload;
+      })
+      .addCase(searchByUserRoleAction.pending, (state) => {
+        state.searchByUserRoleRequestStatus = REDUX_ACTION_STATUS.PENDING_STATUS;
+      })
+      .addCase(searchByUserRoleAction.rejected, (state) => {
+        state.searchByUserRoleRequestStatus = REDUX_ACTION_STATUS.ERROR_STATUS;
       })
       .addCase(getSelectedUserAction.fulfilled, (state, action: PayloadAction<UserRequestResponse>) => {
         state.getSelectedUserRequestStatus = REDUX_ACTION_STATUS.SUCCESS_STATUS;
@@ -107,6 +127,6 @@ export const adminDashboardSlice = createSlice({
   }
 });
 
-export const { clearSearchByUsernameResults, clearGetSelectedUserResults } = adminDashboardSlice.actions;
+export const { clearSearchForUsersResults, clearGetSelectedUserResults } = adminDashboardSlice.actions;
 
 export default adminDashboardSlice.reducer;

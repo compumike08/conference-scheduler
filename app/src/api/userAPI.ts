@@ -55,6 +55,28 @@ export async function searchByUsername(searchUsername: string): Promise<Array<Us
   }
 }
 
+export async function searchByUserRole(searchRole: string): Promise<Array<UserRequestResponse>> {
+  const url = `/api/user/searchByUserRole`;
+  try {
+    const response = await axios.get(url, {
+      params: {
+        searchRole
+      }
+    });
+    return response.data;
+  } catch (err) {
+    console.log(err);
+
+    if (axios.isAxiosError(err)) {
+      if (err && err.response && err.response.data.error) {
+        throw new Error(err.response.data.error);
+      }
+    }
+
+    throw new Error(UNKNOWN_ERR_MSG);
+  }
+}
+
 export async function getUserByUuid(searchUuid: string): Promise<UserRequestResponse> {
   const url = `/api/user/userUuid/${searchUuid}`;
   try {
