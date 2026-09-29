@@ -1,6 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
-import { authenticate, logout, type LoginRequest, type LoginResponse } from '../../api/authAPI';
+import { authenticate, logout, type LoginRequest } from '../../api/authAPI';
 import { REDUX_ACTION_STATUS } from '../../constants/globalConstants';
 
 export interface LoginState {
@@ -35,7 +34,7 @@ export const loginSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(authenticateAction.fulfilled, (state, action: PayloadAction<LoginResponse>) => {
+      .addCase(authenticateAction.fulfilled, (state) => {
         state.authenticateRequestStatus = REDUX_ACTION_STATUS.SUCCESS_STATUS;
         state.isLoggedIn = true;
       })
