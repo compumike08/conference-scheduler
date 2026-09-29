@@ -13,6 +13,10 @@ export interface LoginResponse {
   refreshToken: string
 }
 
+export interface RefreshTokenRequest {
+  refreshToken: string
+}
+
 let axiosHeaderInterceptor: number | null = null;
 let setTimeoutRef: number | null = null;
 
@@ -58,9 +62,32 @@ export async function logout() {
 }
 
 export async function refreshToken() {
-  // Dummy function for now
-  // TODO: Implement actual function
-  console.log("Dummy refreshToken function triggered");
+  const refreshToken = sessionStorage.getItem(REFRESH_SESSION_ATTRIBUTE_NAME);
+
+  if (refreshToken === null) {
+    throw new Error("No refresh token found in session storage");
+  }
+
+  const data: RefreshTokenRequest = {
+    refreshToken
+  };
+
+  const url = `/api/refreshToken`;
+  try {
+    const response = await axios.post(url, data);
+    registerSuccessfulLoginForJwt(response.data);
+    return response.data;
+  } catch (err) {
+    console.log(err);
+
+    if (axios.isAxiosError(err)) {
+      if (err && err.response && err.response.data.error) {
+        throw new Error(err.response.data.error);
+      }
+    }
+
+    throw new Error(UNKNOWN_ERR_MSG);
+  }
 }
 
 export async function authenticate(data: LoginRequest): Promise<LoginResponse> {
