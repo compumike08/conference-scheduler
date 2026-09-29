@@ -17,6 +17,7 @@ function Header() {
   const { currentUser } = useAppSelector((state: RootState) => state.user);
   const { roles = [] } = currentUser ?? {};
   const isAdminUser = roles.includes(UserRole.ROLE_ADMIN);
+  const isMemberUser = roles.includes(UserRole.ROLE_MEMBER);
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -98,6 +99,10 @@ function Header() {
     routeArray.push(ROUTE_CONST[4].path);
   }
 
+  if (isLoggedIn && !isMemberUser) {
+    routeArray.push(ROUTE_CONST[5].path);
+  }
+
   const routeMatch = useRouteMatch(routeArray);
   const currentTab = routeMatch?.pattern?.path;
   const appBarTitle = currentRoute ? currentRoute.title : "";
@@ -155,6 +160,15 @@ function Header() {
                   </MenuItem>
                 )}
 
+                {isLoggedIn && !isMemberUser && (
+                  <MenuItem
+                    selected={currentTab === ROUTE_CONST[5].path}
+                    onClick={() => handleMenuClick(ROUTE_CONST[5].path)}
+                  >
+                    {ROUTE_CONST[5].title}
+                  </MenuItem>
+                )}
+
                 {isLoggedIn && (
                   <MenuItem
                     selected={currentTab === ROUTE_CONST[4].path}
@@ -182,6 +196,9 @@ function Header() {
               <Tab label={ROUTE_CONST[1].title} value={ROUTE_CONST[1].path} to={ROUTE_CONST[1].path} component={Link} />
               {isAdminUser && (
                 <Tab label={ROUTE_CONST[6].title} value={ROUTE_CONST[6].path} to={ROUTE_CONST[6].path} component={Link} />
+              )}
+              {isLoggedIn && !isMemberUser && (
+                <Tab label={ROUTE_CONST[5].title} value={ROUTE_CONST[5].path} to={ROUTE_CONST[5].path} component={Link} />
               )}
               {isLoggedIn && (
                 <Tab label={ROUTE_CONST[4].title} value={ROUTE_CONST[4].path} to={ROUTE_CONST[4].path} component={Link} />
