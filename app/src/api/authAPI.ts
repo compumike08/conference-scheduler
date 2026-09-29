@@ -14,6 +14,7 @@ export interface LoginResponse {
 }
 
 let axiosHeaderInterceptor: number | null = null;
+let setTimeoutRef: number | null = null;
 
 function createJWTToken(token: string) {
   return "Bearer " + token;
@@ -44,6 +45,7 @@ export async function logout() {
     return true;
   } catch (err) {
     console.log(err);
+    clearSessionStorage();
 
     if (axios.isAxiosError(err)) {
       if (err && err.response && err.response.data.error) {
@@ -108,7 +110,7 @@ export function registerSuccessfulLoginForJwt(data: LoginResponse) {
     throw new Error("Error setting refresh token timer");
   }
 
-  setTimeout(refreshToken, timerValueForRefresh * 1000);
+  setTimeoutRef = setTimeout(refreshToken, timerValueForRefresh * 1000);
 }
 
 export function clearSessionStorage() {
@@ -117,6 +119,11 @@ export function clearSessionStorage() {
 }
 
 export function ejectAxiosInterceptor() {
+  if (setTimeoutRef !== null) {
+    window.clearTimeout(setTimeoutRef);
+    setTimeoutRef = null;
+  }
+
   if (axiosHeaderInterceptor !== null) {
     axios.interceptors.request.eject(axiosHeaderInterceptor);
     axiosHeaderInterceptor = null;

@@ -13,7 +13,7 @@ import { UserRole } from "../constants/userConstants";
 function Header() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { token } = useAppSelector((state: RootState) => state.login);
+  const { isLoggedIn } = useAppSelector((state: RootState) => state.login);
   const { currentUser } = useAppSelector((state: RootState) => state.user);
   const { roles = [] } = currentUser ?? {};
   const isAdminUser = roles.includes(UserRole.ROLE_ADMIN);
@@ -94,7 +94,7 @@ function Header() {
     routeArray.push(ROUTE_CONST[6].path);
   }
   
-  if (token !== null) {
+  if (isLoggedIn) {
     routeArray.push(ROUTE_CONST[4].path);
   }
 
@@ -155,7 +155,7 @@ function Header() {
                   </MenuItem>
                 )}
 
-                {token !== null && (
+                {isLoggedIn && (
                   <MenuItem
                     selected={currentTab === ROUTE_CONST[4].path}
                     onClick={() => handleMenuClick(ROUTE_CONST[4].path)}
@@ -183,7 +183,7 @@ function Header() {
               {isAdminUser && (
                 <Tab label={ROUTE_CONST[6].title} value={ROUTE_CONST[6].path} to={ROUTE_CONST[6].path} component={Link} />
               )}
-              {token !== null && (
+              {isLoggedIn && (
                 <Tab label={ROUTE_CONST[4].title} value={ROUTE_CONST[4].path} to={ROUTE_CONST[4].path} component={Link} />
               )}
             </Tabs>

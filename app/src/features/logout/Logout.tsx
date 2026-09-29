@@ -1,18 +1,17 @@
-import { Alert, Backdrop, Box, CircularProgress, Grid } from "@mui/material";
-import { useEffect, useState } from "react";
+import { Backdrop, Box, CircularProgress, Grid } from "@mui/material";
+import { useEffect } from "react";
 import type { SerializedError } from "@reduxjs/toolkit";
+import { useSnackbar } from "notistack";
 import { useAppDispatch, useAppSelector, type RootState } from "../../app/store";
 import { logoutAction } from "../login/loginSlice";
 import { REDUX_ACTION_STATUS, UNKNOWN_ERR_MSG } from "../../constants/globalConstants";
-import { margin } from "@mui/system";
 
 function Logout() {
   const dispatch = useAppDispatch();
 
-  const { logoutRequestStatus } = useAppSelector((state: RootState) => state.login);
+  const { enqueueSnackbar } = useSnackbar();
 
-  const [isServerError, setIsServerError] = useState(false);
-  const [serverErrorMsg, setServerErrorMsg] = useState("");
+  const { logoutRequestStatus } = useAppSelector((state: RootState) => state.login);
 
   useEffect(() => {
     const logoutFunc = async () => {
@@ -20,13 +19,11 @@ function Logout() {
         await dispatch(logoutAction()).unwrap();
       } catch (err) {
         const error = err as SerializedError;
-        setIsServerError(true);
-
         if (error.message && error.message.length > 0) {
-          setServerErrorMsg(error.message);
+          enqueueSnackbar(error.message, { variant: "error", preventDuplicate: true });
         } else {
           console.log(error);
-          setServerErrorMsg(UNKNOWN_ERR_MSG);
+          enqueueSnackbar(UNKNOWN_ERR_MSG, { variant: "error", preventDuplicate: true });
         }
       }
     };
@@ -51,12 +48,6 @@ function Logout() {
           md: 6,
           lg: 4
         }}>
-          {isServerError && (
-            <Box sx={{ marginTop: 1 }}>
-              <Alert severity="error">{serverErrorMsg}</Alert>
-            </Box>
-          )}
-
           {logoutRequestStatus === REDUX_ACTION_STATUS.SUCCESS_STATUS && (
             <Box>
               You have logged out successfully

@@ -6,15 +6,13 @@ import { REDUX_ACTION_STATUS } from '../../constants/globalConstants';
 export interface LoginState {
     authenticateRequestStatus: REDUX_ACTION_STATUS,
     logoutRequestStatus: REDUX_ACTION_STATUS,
-    token: string | null,
-    refreshToken: string | null
+    isLoggedIn: boolean
 }
 
 const initialState: LoginState = {
     authenticateRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
     logoutRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
-    token: null,
-    refreshToken: null
+    isLoggedIn: false
 };
 
 export const authenticateAction = createAsyncThunk(
@@ -39,8 +37,7 @@ export const loginSlice = createSlice({
     builder
       .addCase(authenticateAction.fulfilled, (state, action: PayloadAction<LoginResponse>) => {
         state.authenticateRequestStatus = REDUX_ACTION_STATUS.SUCCESS_STATUS;
-        state.token = action.payload.token;
-        state.refreshToken = action.payload.refreshToken;
+        state.isLoggedIn = true;
       })
       .addCase(authenticateAction.pending, (state) => {
         state.authenticateRequestStatus = REDUX_ACTION_STATUS.PENDING_STATUS;
@@ -50,14 +47,14 @@ export const loginSlice = createSlice({
       })
       .addCase(logoutAction.fulfilled, (state) => {
         state.logoutRequestStatus = REDUX_ACTION_STATUS.SUCCESS_STATUS;
-        state.token = null;
-        state.refreshToken = null;
+        state.isLoggedIn = false;
       })
       .addCase(logoutAction.pending, (state) => {
         state.logoutRequestStatus = REDUX_ACTION_STATUS.PENDING_STATUS;
       })
       .addCase(logoutAction.rejected, (state) => {
         state.logoutRequestStatus = REDUX_ACTION_STATUS.ERROR_STATUS;
+        state.isLoggedIn = false;
       });
   }
 });

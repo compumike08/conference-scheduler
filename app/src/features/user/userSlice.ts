@@ -45,6 +45,10 @@ export const userSlice = createSlice({
         state.getCurrentUserStatus = REDUX_ACTION_STATUS.IDLE_STATUS;
         state.currentUser = null;
       })
+      .addCase(logoutAction.rejected, (state) => {
+        state.getCurrentUserStatus = REDUX_ACTION_STATUS.IDLE_STATUS;
+        state.currentUser = null;
+      })
       .addCase(createMemberAndReturnUpdatedUserAction.fulfilled, (state, action: PayloadAction<UserWithMemberResponse>) => {
         if (state.currentUser) {
           state.currentUser.roles = action.payload.roles;
