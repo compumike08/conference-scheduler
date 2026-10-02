@@ -116,12 +116,11 @@ function Header() {
     routeArray.push(ROUTE_CONST[8].path);
   }
 
-  if (isAdminUser) {
-    routeArray.push(ROUTE_CONST[9].path);
-  }
-
   const routeMatch = useRouteMatch(routeArray);
-  const currentTab = routeMatch?.pattern?.path;
+  let currentTab = routeMatch?.pattern?.path;
+  if (currentTab && !routeArray.includes(currentTab)) {
+    currentTab = undefined;
+  }
   const appBarTitle = currentRoute ? currentRoute.title : "";
 
   const theme = useTheme();
