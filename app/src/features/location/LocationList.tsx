@@ -1,12 +1,14 @@
-import { Backdrop, CircularProgress, Grid, Box, Stack, Typography, Alert, Button } from "@mui/material";
-import { DataGrid, type GridColDef, type GridFilterModel, type GridSortModel } from "@mui/x-data-grid";
+import { Backdrop, CircularProgress, Grid, Box, Stack, Typography, Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import { DataGrid, GridActionsCellItem, type GridColDef, type GridFilterModel, type GridRowParams, type GridSortModel } from "@mui/x-data-grid";
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { useEffect, useState } from "react";
 import type { SerializedError } from "@reduxjs/toolkit";
 import { useNavigate } from "react-router";
+import { useSnackbar } from "notistack";
 import { useAppDispatch, useAppSelector, type RootState } from "../../app/store";
 import { selectLocationListWithId } from "./locationSelectors";
 import { REDUX_ACTION_STATUS, UNKNOWN_ERR_MSG } from "../../constants/globalConstants";
-import { clearLocationsList, getAllLocationsAction } from "./locationSlice";
+import { clearLocationsList, getAllLocationsAction, deleteLocationAction } from "./locationSlice";
 import type { Location } from "../../constants/locationConstants";
 import { UserRole } from "../../constants/userConstants";
 
@@ -18,11 +20,16 @@ const INITIAL_FILTER_MODEL: GridFilterModel = {
 function LocationList() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { enqueueSnackbar } = useSnackbar();
+
   const locationsList = useAppSelector((state: RootState) => selectLocationListWithId(state));
   const { getAllLocationsRequestStatus } = useAppSelector((state: RootState) => state.location);
   const { currentUser } = useAppSelector((state: RootState) => state.user);
   const { roles = [] } = currentUser ?? {};
   const isAdminUser = roles.includes(UserRole.ROLE_ADMIN);
+
+  const [isShowDeleteLocationModal, setIsShowDeleteLocationModal] = useState(false);
+  const [deleteLocation, setDeleteLocation] = useState<Location | null>(null);
 
   const [filterModel, setFilterModel] = useState<GridFilterModel>(INITIAL_FILTER_MODEL);
   const [sortModel, setSortModel] = useState<GridSortModel>([]);
@@ -59,7 +66,44 @@ function LocationList() {
     return getAllLocationsRequestStatus === REDUX_ACTION_STATUS.PENDING_STATUS;
   };
 
+  const handleDeleteLocationClick = (locationUuid: string) => {
+    const locationToDelete = locationsList.find(location => location.locationUuid === locationUuid);
+
+    if (locationToDelete == undefined) {
+      throw new Error(`Location to be deleted could not be found by locationUuid: ${locationUuid}`);
+    }
+
+    setIsServerError(false);
+    setServerErrorMsg("");
+
+    setDeleteLocation(locationToDelete);
+    setIsShowDeleteLocationModal(true);
+  }
+
   const columns: GridColDef<Array<Location>[number]>[] = [
+      {
+        field: 'btnActions',
+        type: 'actions',
+        headerName: '',
+        editable: false,
+        rowHeader: true,
+        sortable: false,
+        filterable: false,
+        width: 100,
+        getActions: (params: GridRowParams) => [
+          <GridActionsCellItem
+            icon={<DeleteForeverIcon
+              sx={{ 
+                fontSize: '1.5rem',
+                color: 'error.main',
+                '&:hover': { color: 'error.dark' } 
+              }} 
+            />}
+            label="Delete"
+            onClick={() => handleDeleteLocationClick(params.id as string)}
+          />
+        ]
+      },
       {
         field: 'locationName',
         headerName: 'Name',
@@ -80,8 +124,66 @@ function LocationList() {
       }
     ];
 
+  const handleNoDeleteLocation = () => {
+    setIsShowDeleteLocationModal(false);
+    setDeleteLocation(null);
+  };
+
+  const handleYesDeleteLocation = async () => {
+    if (deleteLocation === null) {
+      throw new Error(`Value of deleteLocation is null when handleYesDeleteLocation invoked`);
+    }
+
+    try {
+      const response = await dispatch(deleteLocationAction(deleteLocation.locationUuid)).unwrap();
+
+      setIsShowDeleteLocationModal(false);
+      setDeleteLocation(null);
+
+      enqueueSnackbar(`Location ${response.locationName} has been successfully deleted`, { variant: "success" });
+    } catch (err) {
+      const error = err as SerializedError;
+      setIsShowDeleteLocationModal(false);
+      setDeleteLocation(null);
+      
+      setIsServerError(true);
+
+      if (error.message && error.message.length > 0) {
+        setServerErrorMsg(error.message);
+      } else {
+        console.log(error);
+        setServerErrorMsg(UNKNOWN_ERR_MSG);
+      }
+    }
+  }
+
   return (
     <>
+      {isShowDeleteLocationModal && (
+        <Dialog
+          open={isShowDeleteLocationModal}
+          onClose={handleNoDeleteLocation}
+          aria-labelledby="alert-dialog-delete-location--title"
+          aria-describedby="alert-dialog-delete-location--description"
+          role="alertdialog"
+          closeAfterTransition={false}
+        >
+          <DialogTitle id="alert-dialog-delete-location--title">
+            {"Delete Location"}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-delete-location--description">
+              Are you sure you want to delete location {deleteLocation ? deleteLocation.locationName : ''}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleNoDeleteLocation} autoFocus>
+              No
+            </Button>
+            <Button color="error" variant="contained" onClick={handleYesDeleteLocation}>Yes</Button>
+          </DialogActions>
+        </Dialog>
+      )}
       <Backdrop
         sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
         open={isRequestPending()}

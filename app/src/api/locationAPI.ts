@@ -54,3 +54,22 @@ export async function createNewLocation(data: CreateLocationRequest): Promise<Lo
     throw new Error(UNKNOWN_ERR_MSG);
   }
 }
+
+export async function deleteLocation(locationUuid: string): Promise<Location> {
+  const url = `/api/location/deleteLocation/${locationUuid}`;
+
+  try {
+    const response = await axios.delete(url);
+    return response.data;
+  } catch (err) {
+    console.log(err);
+
+    if (axios.isAxiosError(err)) {
+      if (err && err.response && err.response.data.error) {
+        throw new Error(err.response.data.error);
+      }
+    }
+
+    throw new Error(UNKNOWN_ERR_MSG);
+  }
+}
