@@ -111,6 +111,12 @@ public class LocationService {
     }
 
     Location existingLocation = optExistingLocation.get();
+
+    if (!existingLocation.getEvents().isEmpty()) {
+      log.warn("Location with uuid {} still has events, and cannot be deleted", locationUuid);
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot delete this location, as it still has one or more events scheduled in it");
+    }
+
     locationRepository.delete(existingLocation);
 
     return ConvertDTOUtil.convertLocationToLocationDTO(existingLocation);
