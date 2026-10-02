@@ -2,12 +2,13 @@ import { Backdrop, CircularProgress, Grid, Box, Stack, Typography, Alert, Button
 import { DataGrid, type GridColDef, type GridFilterModel, type GridSortModel } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
 import type { SerializedError } from "@reduxjs/toolkit";
+import { useNavigate } from "react-router";
 import { useAppDispatch, useAppSelector, type RootState } from "../../app/store";
 import { selectLocationListWithId } from "./locationSelectors";
 import { REDUX_ACTION_STATUS, UNKNOWN_ERR_MSG } from "../../constants/globalConstants";
 import { clearLocationsList, getAllLocationsAction } from "./locationSlice";
 import type { Location } from "../../constants/locationConstants";
-import { useNavigate } from "react-router";
+import { UserRole } from "../../constants/userConstants";
 
 const INITIAL_FILTER_MODEL: GridFilterModel = {
   items: [],
@@ -19,6 +20,9 @@ function LocationList() {
   const dispatch = useAppDispatch();
   const locationsList = useAppSelector((state: RootState) => selectLocationListWithId(state));
   const { getAllLocationsRequestStatus } = useAppSelector((state: RootState) => state.location);
+  const { currentUser } = useAppSelector((state: RootState) => state.user);
+  const { roles = [] } = currentUser ?? {};
+  const isAdminUser = roles.includes(UserRole.ROLE_ADMIN);
 
   const [filterModel, setFilterModel] = useState<GridFilterModel>(INITIAL_FILTER_MODEL);
   const [sortModel, setSortModel] = useState<GridSortModel>([]);
@@ -98,9 +102,11 @@ function LocationList() {
                 Locations
               </Typography>
 
-              <Box sx={{ marginTop: 1 }}>
-                <Button variant="contained" onClick={() => navigate("/createLocation")}>Add New Location</Button>
-              </Box>
+              {isAdminUser && (
+                <Box sx={{ marginTop: 1 }}>
+                  <Button variant="contained" onClick={() => navigate("/createLocation")}>Add New Location</Button>
+                </Box>
+              )}
 
               {isServerError && (
                 <Box sx={{ marginTop: 1 }}>
