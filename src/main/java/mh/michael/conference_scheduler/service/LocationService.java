@@ -57,6 +57,26 @@ public class LocationService {
   }
 
   @Transactional
+  public LocationDTO getLocationByUuid(String locationUuidStr) {
+    UUID locationUuid = UuidMethods.handleUuidFromStringError(
+      locationUuidStr,
+      "Location UUID invalid",
+      HttpStatus.BAD_REQUEST
+    );
+
+    Optional<Location> optLocation = locationRepository.findByLocationUuid(locationUuid);
+
+    if (optLocation.isEmpty()) {
+      log.debug("Location with locationUuid {} not found", locationUuidStr);
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found");
+    }
+
+    Location location = optLocation.get();
+
+    return ConvertDTOUtil.convertLocationToLocationDTO(location);
+  }
+
+  @Transactional
   public LocationDTO editLocation(EditLocationRequestDTO editLocationRequestDTO) {
     UUID locationUuid = UUID.fromString(editLocationRequestDTO.getLocationUuid());
 

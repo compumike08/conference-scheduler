@@ -35,6 +35,12 @@ public class LocationRestController {
     return locationService.getAllLocations();
   }
 
+  @GetMapping("/getLocation/{locationUuid}")
+  public LocationDTO getLocation(@PathVariable("locationUuid") String locationUuid) {
+    log.debug("LocationRestController::getLocation");
+    return locationService.getLocationByUuid(locationUuid);
+  }
+
   @PutMapping("/editLocation")
   @PreAuthorize("hasRole('ADMIN')")
   public LocationDTO editLocation(@Valid @RequestBody EditLocationRequestDTO editLocationRequestDTO) {
