@@ -1,6 +1,7 @@
 import { Backdrop, CircularProgress, Grid, Box, Stack, Typography, Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { DataGrid, GridActionsCellItem, type GridColDef, type GridFilterModel, type GridRowParams, type GridSortModel } from "@mui/x-data-grid";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import EditIcon from '@mui/icons-material/Edit';
 import { useEffect, useState } from "react";
 import type { SerializedError } from "@reduxjs/toolkit";
 import { useNavigate } from "react-router";
@@ -80,6 +81,10 @@ function LocationList() {
     setIsShowDeleteLocationModal(true);
   }
 
+  const handleEditLocationClick = (locationUuid: string) => {
+    navigate(`/editLocation/${locationUuid}`);
+  };
+
   const columns: GridColDef<Array<Location>[number]>[] = [
       {
         field: 'btnActions',
@@ -101,6 +106,17 @@ function LocationList() {
             />}
             label="Delete"
             onClick={() => handleDeleteLocationClick(params.id as string)}
+          />,
+          <GridActionsCellItem
+            icon={<EditIcon
+              sx={{ 
+                fontSize: '1.5rem',
+                color: 'primary.main',
+                '&:hover': { color: 'primary.dark' } 
+              }}
+            />}
+            label="Edit"
+            onClick={() => handleEditLocationClick(params.id as string)}
           />
         ]
       },

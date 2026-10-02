@@ -16,6 +16,7 @@ import AdminDashboard from "./features/admin/AdminDashboard.tsx";
 import EditUserRoles from "./features/admin/user/EditUserRoles.tsx";
 import LocationList from "./features/location/LocationList.tsx";
 import CreateLocation from "./features/location/createLocation/CreateLocation.tsx";
+import EditLocation from "./features/location/editLocation/EditLocation.tsx";
 
 const App = () => {
   const { currentUser } = useAppSelector((state: RootState) => state.user);
@@ -65,6 +66,14 @@ const App = () => {
             element={
               <ProtectedRoute isAuthenticated={isAdminUser}>
                 <CreateLocation />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/editLocation/:locationUuid"
+            element={
+              <ProtectedRoute isAuthenticated={isAdminUser}>
+                <EditLocation />
               </ProtectedRoute>
             }
           />
