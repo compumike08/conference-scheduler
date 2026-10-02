@@ -72,15 +72,26 @@ public class LocationService {
     if (!editLocationRequestDTO.getCapacity().equals(location.getCapacity())) {
       Set<Event> eventsAtLocation = location.getEvents();
       AtomicBoolean isTooManyAttendees = new AtomicBoolean(false);
+      AtomicBoolean isUnderEventMaxCapacity = new AtomicBoolean(false);
 
       eventsAtLocation.forEach(event -> {
         if (event.getMembers().size() > editLocationRequestDTO.getCapacity()) {
           isTooManyAttendees.set(true);
         }
+
+        if (event.getMaxAttendees() > editLocationRequestDTO.getCapacity()) {
+          isUnderEventMaxCapacity.set(true);
+        }
       });
 
       if (isTooManyAttendees.get()) {
         final String errMsg = "Too many attendees are attending one or more events for the new location capacity";
+        log.warn(errMsg);
+        throw new ResponseStatusException(HttpStatus.CONFLICT, errMsg);
+      }
+
+      if (isUnderEventMaxCapacity.get()) {
+        final String errMsg = "One or more events has a maximum number of attendees that is over the new location capacity";
         log.warn(errMsg);
         throw new ResponseStatusException(HttpStatus.CONFLICT, errMsg);
       }
