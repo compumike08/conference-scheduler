@@ -86,59 +86,62 @@ function LocationList() {
   };
 
   const columns: GridColDef<Array<Location>[number]>[] = [
-      {
-        field: 'btnActions',
-        type: 'actions',
-        headerName: '',
-        editable: false,
-        rowHeader: true,
-        sortable: false,
-        filterable: false,
-        width: 100,
-        getActions: (params: GridRowParams) => [
-          <GridActionsCellItem
-            icon={<DeleteForeverIcon
-              sx={{ 
-                fontSize: '1.5rem',
-                color: 'error.main',
-                '&:hover': { color: 'error.dark' } 
-              }} 
-            />}
-            label="Delete"
-            onClick={() => handleDeleteLocationClick(params.id as string)}
-          />,
-          <GridActionsCellItem
-            icon={<EditIcon
-              sx={{ 
-                fontSize: '1.5rem',
-                color: 'primary.main',
-                '&:hover': { color: 'primary.dark' } 
-              }}
-            />}
-            label="Edit"
-            onClick={() => handleEditLocationClick(params.id as string)}
-          />
-        ]
-      },
-      {
-        field: 'locationName',
-        headerName: 'Name',
-        width: 250,
-        editable: false
-      },
-      {
-        field: 'capacity',
-        headerName: 'Capacity',
-        width: 100,
-        editable: false
-      },
-      {
-        field: 'locationDescription',
-        headerName: 'Description',
-        editable: false,
-        width: 550
-      }
-    ];
+    {
+      field: 'locationName',
+      headerName: 'Name',
+      width: 250,
+      editable: false
+    },
+    {
+      field: 'capacity',
+      headerName: 'Capacity',
+      width: 100,
+      editable: false
+    },
+    {
+      field: 'locationDescription',
+      headerName: 'Description',
+      editable: false,
+      width: 550
+    }
+  ];
+
+  if (isAdminUser) {
+    columns.unshift({
+      field: 'btnActions',
+      type: 'actions',
+      headerName: '',
+      editable: false,
+      rowHeader: true,
+      sortable: false,
+      filterable: false,
+      width: 100,
+      getActions: (params: GridRowParams) => [
+        <GridActionsCellItem
+          icon={<DeleteForeverIcon
+            sx={{ 
+              fontSize: '1.5rem',
+              color: 'error.main',
+              '&:hover': { color: 'error.dark' } 
+            }} 
+          />}
+          label="Delete"
+          onClick={() => handleDeleteLocationClick(params.id as string)}
+        />,
+        <GridActionsCellItem
+          icon={<EditIcon
+            sx={{ 
+              fontSize: '1.5rem',
+              color: 'primary.main',
+              '&:hover': { color: 'primary.dark' } 
+            }}
+          />}
+          label="Edit"
+          onClick={() => handleEditLocationClick(params.id as string)}
+        />
+      ]
+    });
+  }
 
   const handleNoDeleteLocation = () => {
     setIsShowDeleteLocationModal(false);
