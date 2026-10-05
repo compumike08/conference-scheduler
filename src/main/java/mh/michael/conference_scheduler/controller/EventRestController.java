@@ -44,7 +44,7 @@ public class EventRestController {
 
   @GetMapping("/getEventsInDateRange")
   @PreAuthorize("hasRole('MEMBER') or hasRole('ADMIN') or hasRole('SCHEDULER')")
-  public List<EventDTO> getEventsInDateRange(@Valid @IsValidInstant @RequestParam Instant startDate, @Valid @IsValidInstant @RequestParam Instant endDate) {
+  public List<EventDTO> getEventsInDateRange(@Valid @IsValidInstant @RequestParam String startDate, @Valid @IsValidInstant @RequestParam String endDate) {
     log.debug("EventRestController::getEventsInDateRange");
     return eventService.getAllEventsWithDateRange(startDate, endDate);
   }
