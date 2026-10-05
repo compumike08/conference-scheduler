@@ -17,6 +17,7 @@ import EditUserRoles from "./features/admin/user/EditUserRoles.tsx";
 import LocationList from "./features/location/LocationList.tsx";
 import CreateLocation from "./features/location/createLocation/CreateLocation.tsx";
 import EditLocation from "./features/location/editLocation/EditLocation.tsx";
+import EventList from "./features/event/EventList.tsx";
 
 const App = () => {
   const { currentUser } = useAppSelector((state: RootState) => state.user);
@@ -37,6 +38,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/logout" element={<Logout />} />
           <Route path="/createMember" element={<CreateMember />} />
+          <Route path="/eventList" element={<EventList />} />
           <Route
             path="/admin/dashboard"
             element={

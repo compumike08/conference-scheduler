@@ -75,6 +75,10 @@ function Header() {
     {
       title: 'Locations - Add New Location',
       path: '/createLocation'
+    },
+    {
+      title: 'Events',
+      path: '/eventList'
     }
   ];
 
@@ -114,6 +118,10 @@ function Header() {
 
   if (isAdminUser || isSchedulerUser) {
     routeArray.push(ROUTE_CONST[8].path);
+  }
+
+  if (isMemberUser || isAdminUser || isSchedulerUser) {
+    routeArray.push(ROUTE_CONST[10].path);
   }
 
   const routeMatch = useRouteMatch(routeArray);
@@ -167,6 +175,15 @@ function Header() {
                   {ROUTE_CONST[1].title}
                 </MenuItem>
 
+                {(isMemberUser || isAdminUser || isSchedulerUser) && (
+                  <MenuItem
+                    selected={currentTab === ROUTE_CONST[10].path}
+                    onClick={() => handleMenuClick(ROUTE_CONST[10].path)}
+                  >
+                    {ROUTE_CONST[10].title}
+                  </MenuItem>
+                )}
+
                 {isAdminUser && (
                   <MenuItem
                     selected={currentTab === ROUTE_CONST[6].path}
@@ -219,6 +236,11 @@ function Header() {
             >
               <Tab label={ROUTE_CONST[0].title} value={ROUTE_CONST[0].path} to={ROUTE_CONST[0].path} component={Link} />
               <Tab label={ROUTE_CONST[1].title} value={ROUTE_CONST[1].path} to={ROUTE_CONST[1].path} component={Link} />
+
+              {(isMemberUser || isAdminUser || isSchedulerUser) && (
+                <Tab label={ROUTE_CONST[10].title} value={ROUTE_CONST[10].path} to={ROUTE_CONST[10].path} component={Link} />
+              )}
+
               {isAdminUser && (
                 <Tab label={ROUTE_CONST[6].title} value={ROUTE_CONST[6].path} to={ROUTE_CONST[6].path} component={Link} />
               )}
