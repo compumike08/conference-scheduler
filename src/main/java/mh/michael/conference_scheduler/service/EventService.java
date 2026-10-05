@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -190,6 +191,23 @@ public class EventService {
     return allEvents.stream()
       .map(ConvertDTOUtil::convertEventToEventDTO)
       .collect(Collectors.toList());
+  }
+
+  @Transactional
+  public List<EventDTO> getAllEventsWithDateRange(Instant startDate, Instant endDate) {
+    Instant truncatedStartDate = startDate.truncatedTo(ChronoUnit.DAYS);
+    Instant endOfDayEndDate = endDate
+      .truncatedTo(ChronoUnit.DAYS)
+      .plus(1, ChronoUnit.DAYS)
+      .minus(1, ChronoUnit.SECONDS);
+
+    if (endOfDayEndDate.isBefore(truncatedStartDate)) {
+      log.warn("Invalid date range: end of day date {} before truncated start date {}", endOfDayEndDate, truncatedStartDate);
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid date range; end date must be after start date");
+    }
+
+    List<Event> eventsWithinRangeList = eventRepository.findAllEventsInDateTimeRange(truncatedStartDate, endOfDayEndDate);
+    return eventsWithinRangeList.stream().map(ConvertDTOUtil::convertEventToEventDTO).collect(Collectors.toList());
   }
 
   @Transactional

@@ -7,12 +7,19 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long> {
   Optional<Event> findByEventUuid(UUID eventUuid);
+
+  @Query("SELECT e from event e where (e.startDateTime >= :startDateTimeRange or e.endDateTime >= :startDateTimeRange) and (e.startDateTime <= :endDateTimeRange or e.endDateTime <= :endDateTimeRange) order by e.startDateTime asc")
+  List<Event> findAllEventsInDateTimeRange(
+    @Param("startDateTimeRange") Instant startDateTimeRange,
+    @Param("endDateTimeRange") Instant endDateTimeRange
+  );
 
   @Query("SELECT COUNT(e) > 0 FROM event e WHERE e.startDateTime < :newEnd AND e.endDateTime > :newStart AND :currentMember MEMBER OF e.members")
   boolean existsOverlappingForMember(
