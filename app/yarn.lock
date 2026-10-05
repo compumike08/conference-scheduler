@@ -435,6 +435,19 @@
     prop-types "^15.8.1"
     use-sync-external-store "^1.7.0"
 
+"@mui/x-date-pickers@^9.14.0":
+  version "9.14.0"
+  resolved "https://registry.yarnpkg.com/@mui/x-date-pickers/-/x-date-pickers-9.14.0.tgz#fff8060854360d7e8cc02fc4aad4a478de1fdb88"
+  integrity sha512-b/TbCmIM/yqvD8CFHDKyOrneRWE5k2tKJ0DMFj+7udpziI30nWnnZ8IfOq7QTXrYfguXspiCecF1O2wmuckOYA==
+  dependencies:
+    "@babel/runtime" "^7.29.7"
+    "@mui/utils" "^9.4.0"
+    "@mui/x-internals" "^9.14.0"
+    "@types/react-transition-group" "^4.4.12"
+    clsx "^2.1.1"
+    prop-types "^15.8.1"
+    react-transition-group "^4.4.5"
+
 "@mui/x-internals@^9.14.0":
   version "9.14.0"
   resolved "https://registry.yarnpkg.com/@mui/x-internals/-/x-internals-9.14.0.tgz#c1866a908a9a00d7a640ae61bf385d07ac3044fe"
@@ -800,6 +813,11 @@ csstype@^3.0.10, csstype@^3.0.2, csstype@^3.2.2, csstype@^3.2.3:
   version "3.2.3"
   resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.2.3.tgz#ec48c0f3e993e50648c86da559e2610995cf989a"
   integrity sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==
+
+dayjs@^1.11.23:
+  version "1.11.23"
+  resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.23.tgz#b0a363506dde5f36cf5075e42ebe8115165a8c79"
+  integrity sha512-QDTCU0M0MxR3hQfnlDJfwekQiaanm1ubOD231u73WBckQ/fsamwRLiE2GBz6D3a/xF1NgfiDLJjXBa1hYOYTtQ==
 
 debug@4, debug@^4.3.1:
   version "4.4.3"
