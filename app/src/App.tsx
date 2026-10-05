@@ -24,6 +24,8 @@ const App = () => {
   const { roles = [] } = currentUser ?? {};
   const isAdminUser = roles.includes(UserRole.ROLE_ADMIN);
   const isSchedulerUser = roles.includes(UserRole.ROLE_SCHEDULER);
+  const isMemberUser = roles.includes(UserRole.ROLE_MEMBER);
+  const isUserUser = roles.includes(UserRole.ROLE_USER);
 
   return (
     <BrowserRouter>
@@ -38,7 +40,22 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/logout" element={<Logout />} />
           <Route path="/createMember" element={<CreateMember />} />
-          <Route path="/eventList" element={<EventList />} />
+          <Route
+            path="/createMember"
+            element={
+              <ProtectedRoute isAuthenticated={isUserUser && !isMemberUser}>
+                <CreateMember />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/eventList"
+            element={
+              <ProtectedRoute isAuthenticated={isAdminUser || isMemberUser || isSchedulerUser}>
+                <EventList />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/admin/dashboard"
             element={
