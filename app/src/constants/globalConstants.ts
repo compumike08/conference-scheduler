@@ -8,3 +8,7 @@ export const REDUX_ACTION_STATUS = {
 } as const;
 
 export type REDUX_ACTION_STATUS = (typeof REDUX_ACTION_STATUS)[keyof typeof REDUX_ACTION_STATUS];
+
+export const ISO_DATE_FORMAT_PATTERN = 'YYYY-MM-DD[T]HH:mm:ssZ';
+export const READABLE_DATE_ONLY_FORMAT_PATTERN = 'MM/DD/YYYY';
+export const READABLE_DATE_AND_TIME_FORMAT_PATTERN = 'MM/DD/YYYY hh:mm A';
