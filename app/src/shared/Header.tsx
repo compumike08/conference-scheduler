@@ -83,6 +83,10 @@ function Header() {
     {
       title: 'Events - Add New Event',
       path: '/createEvent'
+    },
+    {
+      title: 'Locations - Edit Location',
+      path: '/editLocation/:locationUuid'
     }
   ];
 
