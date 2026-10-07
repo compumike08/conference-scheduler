@@ -3,6 +3,7 @@ package mh.michael.conference_scheduler.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import mh.michael.conference_scheduler.annotations.IsValidInstant;
+import mh.michael.conference_scheduler.annotations.ValidUuid;
 import mh.michael.conference_scheduler.dto.EditEventRequestDTO;
 import mh.michael.conference_scheduler.dto.EventDTO;
 import mh.michael.conference_scheduler.dto.NewEventRequestDTO;
@@ -12,7 +13,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
 import java.util.List;
 
 @RestController
@@ -53,7 +53,7 @@ public class EventRestController {
   @PreAuthorize("hasRole('MEMBER')")
   public EventDTO removeMemberFromEvent(
     @AuthenticationPrincipal JwtUserDetails jwtUserDetails,
-    @PathVariable String eventUuid
+    @Valid @ValidUuid @PathVariable String eventUuid
   ) {
     log.debug("EventRestController::removeMemberFromEvent");
     return eventService.removeMemberFromEvent(jwtUserDetails, eventUuid);
@@ -63,7 +63,7 @@ public class EventRestController {
   @PreAuthorize("hasRole('MEMBER')")
   public EventDTO joinEvent(
     @AuthenticationPrincipal JwtUserDetails jwtUserDetails,
-    @PathVariable("eventUuid") String eventUuid
+    @Valid @ValidUuid @PathVariable("eventUuid") String eventUuid
   ) {
     log.debug("EventRestController::joinEvent");
     return eventService.joinEvent(jwtUserDetails, eventUuid);
@@ -71,7 +71,7 @@ public class EventRestController {
 
   @DeleteMapping("/deleteEvent/{eventUuid}")
   @PreAuthorize("hasRole('ADMIN') or (hasRole('SCHEDULER') and @eventCreatorSecurity.isCreator(#eventUuid, authentication.principal))")
-  public EventDTO deleteEvent(@PathVariable String eventUuid) {
+  public EventDTO deleteEvent(@Valid @ValidUuid @PathVariable String eventUuid) {
     log.debug("EventRestController::deleteEvent");
     return eventService.deleteEvent(eventUuid);
   }
