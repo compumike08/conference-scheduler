@@ -77,6 +77,10 @@ function EventList() {
     navigate("/createEvent");
   };
 
+  const handleEventCardClickCallback = (eventUuid: string) => {
+    navigate(`/editEvent/${eventUuid}`);
+  };
+
   return (
     <>
       <Backdrop
@@ -148,7 +152,7 @@ function EventList() {
 
                 {dayOneEventList.map(evt => {
                   return (
-                    <EventCard event={evt} key={evt.eventUuid} />
+                    <EventCard onClickCallback={handleEventCardClickCallback} event={evt} key={evt.eventUuid} />
                   );
                 })}
               </Stack>
@@ -169,7 +173,7 @@ function EventList() {
 
                 {dayTwoEventList.map(evt => {
                   return (
-                    <EventCard event={evt} key={evt.eventUuid} />
+                    <EventCard onClickCallback={handleEventCardClickCallback} event={evt} key={evt.eventUuid} />
                   );
                 })}
               </Stack>
@@ -190,7 +194,7 @@ function EventList() {
 
                 {dayThreeEventList.map(evt => {
                   return (
-                    <EventCard event={evt} key={evt.eventUuid} />
+                    <EventCard onClickCallback={handleEventCardClickCallback} event={evt} key={evt.eventUuid} />
                   );
                 })}
               </Stack>
@@ -210,7 +214,7 @@ function EventList() {
 
                 {dayFourEventList.map(evt => {
                   return (
-                    <EventCard event={evt} key={evt.eventUuid} />
+                    <EventCard onClickCallback={handleEventCardClickCallback} event={evt} key={evt.eventUuid} />
                   );
                 })}
               </Stack>

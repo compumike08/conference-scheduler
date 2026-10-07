@@ -3,6 +3,7 @@ import type { RootState } from "../../app/store";
 import dayjs, { Dayjs } from "dayjs";
 
 const selectEventList = (state: RootState) => state.event.eventList;
+const selectSelectedEvent = (state: RootState) => state.event.selectedEvent;
 
 const selectFilterDate = (_: RootState, filterDate: Dayjs) => filterDate;
 
@@ -21,5 +22,21 @@ export const selectEventListWithIdAndFiltered = createSelector(
         (evt.startDateTime.isSame(filterDate) || evt.startDateTime.isAfter(filterDate)) &&
           (evt.endDateTime.isSame(endOfDayFilterEndDate) || evt.endDateTime.isBefore(endOfDayFilterEndDate))
       );
+  }
+);
+
+export const selectSelectedEventWithDayjsDates = createSelector(
+  [selectSelectedEvent],
+  (selectedEvent) => {
+    if (selectedEvent === null) {
+      return null;
+    }
+
+    return {
+      ...selectedEvent,
+      id: selectedEvent.eventUuid,
+      startDateTime: dayjs(selectedEvent.startDateTime),
+      endDateTime: dayjs(selectedEvent.endDateTime)
+    };
   }
 );

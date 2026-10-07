@@ -87,6 +87,10 @@ function Header() {
     {
       title: 'Locations - Edit Location',
       path: '/editLocation/:locationUuid'
+    },
+    {
+      title: isAdminUser || isSchedulerUser ? 'Events - Edit Event' : 'Events - View Event',
+      path: '/editEvent/:eventUuid'
     }
   ];
 
