@@ -26,8 +26,14 @@ function EditEvent() {
   const { getSelectedEventRequestStatus, editSelectedEventRequestStatus } = useAppSelector((state: RootState) => state.event);
   const { currentUser } = useAppSelector((state: RootState) => state.user);
   const { roles = [] } = currentUser ?? {};
-  const isEditable = roles.includes(UserRole.ROLE_ADMIN) || roles.includes(UserRole.ROLE_SCHEDULER);
   const selectedEvent = useAppSelector((state: RootState) => selectSelectedEventWithDayjsDates(state));
+
+  const isEditable = roles.includes(UserRole.ROLE_ADMIN) ||
+    (roles.includes(UserRole.ROLE_SCHEDULER) &&
+      currentUser !== null &&
+      selectedEvent !== null &&
+      currentUser.userUuid === selectedEvent.createdByUser.userUuid
+    );
 
   const [eventTitle, setEventTitle] = useState("");
   const [maxAttendees, setMaxAttendees] = useState(1);
