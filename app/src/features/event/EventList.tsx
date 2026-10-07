@@ -111,7 +111,8 @@ function EventList() {
           }}>
             <Box>
               <Stack spacing={2} sx={{
-                marginTop: 2
+                marginTop: 2,
+                marginRight: 1
               }}>
                 <Typography variant="h6">
                   {dayOneDate?.format(READABLE_DATE_ONLY_FORMAT_PATTERN)}
@@ -131,7 +132,8 @@ function EventList() {
           }}>
             <Box>
               <Stack spacing={2} sx={{
-                marginTop: 2
+                marginTop: 2,
+                marginRight: 1
               }}>
                 <Typography variant="h6">
                   {dayTwoDate?.format(READABLE_DATE_ONLY_FORMAT_PATTERN)}
@@ -151,7 +153,8 @@ function EventList() {
           }}>
             <Box>
               <Stack spacing={2} sx={{
-                marginTop: 2
+                marginTop: 2,
+                marginRight: 1
               }}>
                 <Typography variant="h6">
                   {dayThreeDate?.format(READABLE_DATE_ONLY_FORMAT_PATTERN)}
