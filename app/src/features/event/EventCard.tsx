@@ -39,16 +39,6 @@ function EventCard(props: EventCardProps) {
                 </Box>
                 <Box component="div">
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    <Box sx={{ fontWeight: "bold" }} component="span">Number of Current Attendees: </Box>{event.members.length}
-                  </Typography>
-                </Box>
-                <Box component="div">
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    <Box sx={{ fontWeight: "bold" }} component="span">Max Number of Attendees: </Box>{event.maxAttendees}
-                  </Typography>
-                </Box>
-                <Box component="div">
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                     <Box sx={{ fontWeight: "bold" }} component="span">Location: </Box>{event.location.locationName}
                   </Typography>
                 </Box>
