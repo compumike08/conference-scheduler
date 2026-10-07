@@ -77,25 +77,27 @@ export default function NumberSpinner({
         </BaseNumberField.ScrubAreaCursor>
       </BaseNumberField.ScrubArea>
       <Box sx={{ display: 'flex' }}>
-        <BaseNumberField.Decrement
-          render={
-            <Button
-              variant="outlined"
-              aria-label="Decrease"
-              size={size}
-              sx={{
-                borderTopRightRadius: 0,
-                borderBottomRightRadius: 0,
-                borderRight: '0px',
-                '&.Mui-disabled': {
+        {!other.readOnly && (
+          <BaseNumberField.Decrement
+            render={
+              <Button
+                variant="outlined"
+                aria-label="Decrease"
+                size={size}
+                sx={{
+                  borderTopRightRadius: 0,
+                  borderBottomRightRadius: 0,
                   borderRight: '0px',
-                },
-              }}
-            />
-          }
-        >
-          <RemoveIcon fontSize={size} />
-        </BaseNumberField.Decrement>
+                  '&.Mui-disabled': {
+                    borderRight: '0px',
+                  },
+                }}
+              />
+            }
+          >
+            <RemoveIcon fontSize={size} />
+          </BaseNumberField.Decrement>
+        )}
 
         <BaseNumberField.Input
           id={id}
@@ -126,25 +128,27 @@ export default function NumberSpinner({
           )}
         />
 
-        <BaseNumberField.Increment
-          render={
-            <Button
-              variant="outlined"
-              aria-label="Increase"
-              size={size}
-              sx={{
-                borderTopLeftRadius: 0,
-                borderBottomLeftRadius: 0,
-                borderLeft: '0px',
-                '&.Mui-disabled': {
+        {!other.readOnly && (
+          <BaseNumberField.Increment
+            render={
+              <Button
+                variant="outlined"
+                aria-label="Increase"
+                size={size}
+                sx={{
+                  borderTopLeftRadius: 0,
+                  borderBottomLeftRadius: 0,
                   borderLeft: '0px',
-                },
-              }}
-            />
-          }
-        >
-          <AddIcon fontSize={size} />
-        </BaseNumberField.Increment>
+                  '&.Mui-disabled': {
+                    borderLeft: '0px',
+                  },
+                }}
+              />
+            }
+          >
+            <AddIcon fontSize={size} />
+          </BaseNumberField.Increment>
+        )}
       </Box>
     </BaseNumberField.Root>
   );
