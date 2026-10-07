@@ -20,6 +20,7 @@ function CreateEvent() {
 
   const locationsList = useAppSelector((state: RootState) => selectLocationListWithId(state));
   const { getAllLocationsRequestStatus } = useAppSelector((state: RootState) => state.location);
+  const { createNewEventRequestStatus } = useAppSelector((state: RootState) => state.event);
 
   const [eventTitle, setEventTitle] = useState("");
   const [maxAttendees, setMaxAttendees] = useState(1);
@@ -187,7 +188,7 @@ function CreateEvent() {
     <>
       <Backdrop
         sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-        open={getAllLocationsRequestStatus === REDUX_ACTION_STATUS.PENDING_STATUS}
+        open={getAllLocationsRequestStatus === REDUX_ACTION_STATUS.PENDING_STATUS || createNewEventRequestStatus === REDUX_ACTION_STATUS.PENDING_STATUS}
       >
         <CircularProgress color="inherit" />
       </Backdrop>
