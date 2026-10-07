@@ -1,13 +1,14 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { REDUX_ACTION_STATUS } from "../../constants/globalConstants";
 import type { RawEvent } from "../../constants/eventConstants";
-import { createNewEvent, editEvent, getEventByUuid, getEventsInDateRange, type EditEventRequest, type NewEventRequest } from "../../api/eventAPI";
+import { createNewEvent, deleteEvent, editEvent, getEventByUuid, getEventsInDateRange, type EditEventRequest, type NewEventRequest } from "../../api/eventAPI";
 
 export interface EventState {
   getEventsInDateRangeRequestStatus: REDUX_ACTION_STATUS,
   createNewEventRequestStatus: REDUX_ACTION_STATUS,
   getSelectedEventRequestStatus: REDUX_ACTION_STATUS,
   editSelectedEventRequestStatus: REDUX_ACTION_STATUS,
+  deleteSelectedEventRequestStatus: REDUX_ACTION_STATUS,
   eventList: Array<RawEvent>,
   selectedEvent: RawEvent | null
 }
@@ -17,6 +18,7 @@ const initialState: EventState = {
   createNewEventRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
   getSelectedEventRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
   editSelectedEventRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
+  deleteSelectedEventRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
   eventList: [],
   selectedEvent: null
 };
@@ -54,6 +56,13 @@ export const editEventAction = createAsyncThunk(
   }
 );
 
+export const deleteEventAction = createAsyncThunk(
+  'event/deleteEventAction',
+  async (eventUuid: string) => {
+    return await deleteEvent(eventUuid);
+  }
+);
+
 export const eventSlice = createSlice({
   name: "event",
   initialState,
@@ -65,6 +74,7 @@ export const eventSlice = createSlice({
     },
     clearGetSelectedEvent: (state) => {
       state.getSelectedEventRequestStatus = REDUX_ACTION_STATUS.IDLE_STATUS;
+      state.deleteSelectedEventRequestStatus = REDUX_ACTION_STATUS.IDLE_STATUS;
       state.selectedEvent = null;
     }
   },
@@ -107,6 +117,15 @@ export const eventSlice = createSlice({
       })
       .addCase(editEventAction.rejected, (state) => {
         state.editSelectedEventRequestStatus = REDUX_ACTION_STATUS.ERROR_STATUS;
+      })
+      .addCase(deleteEventAction.fulfilled, (state) => {
+        state.deleteSelectedEventRequestStatus = REDUX_ACTION_STATUS.SUCCESS_STATUS;
+      })
+      .addCase(deleteEventAction.pending, (state) => {
+        state.deleteSelectedEventRequestStatus = REDUX_ACTION_STATUS.PENDING_STATUS;
+      })
+      .addCase(deleteEventAction.rejected, (state) => {
+        state.deleteSelectedEventRequestStatus = REDUX_ACTION_STATUS.ERROR_STATUS;
       });
   }
 });

@@ -1,4 +1,4 @@
-import { type SelectChangeEvent, Backdrop, CircularProgress, Grid, Box, Stack, Typography, Alert, FormControl, InputLabel, Input, FormHelperText, Select, MenuItem, Button } from "@mui/material";
+import { type SelectChangeEvent, Backdrop, CircularProgress, Grid, Box, Stack, Typography, Alert, FormControl, InputLabel, Input, FormHelperText, Select, MenuItem, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import type { SerializedError } from "@reduxjs/toolkit";
 import dayjs, { Dayjs } from "dayjs";
@@ -10,7 +10,7 @@ import { UNKNOWN_ERR_MSG, REDUX_ACTION_STATUS } from "../../../constants/globalC
 import NumberSpinner from "../../../shared/NumberSpinner";
 import { selectLocationListWithId } from "../../location/locationSelectors";
 import { getAllLocationsAction, clearLocationsList } from "../../location/locationSlice";
-import { clearEventList, clearGetSelectedEvent, editEventAction, getSelectedEventAction } from "../eventSlice";
+import { clearGetSelectedEvent, deleteEventAction, editEventAction, getSelectedEventAction } from "../eventSlice";
 import { selectSelectedEventWithDayjsDates } from "../eventSelectors";
 import { UserRole } from "../../../constants/userConstants";
 import type { EditEventRequest } from "../../../api/eventAPI";
@@ -50,6 +50,16 @@ function EditEvent() {
   const [locationValidationErrorMsg, setLocationValidationErrorMsg] = useState<string | null>(null);
   const [eventDescriptionValidationErrMsg, setEventDescriptionValidationErrMsg] = useState<string | null>(null);
 
+  const [isShowDeleteEventModal, setIsShowDeleteEventModal] = useState(false);
+
+  const handleNoDeleteEvent = () => {
+    setIsShowDeleteEventModal(false);
+  };
+
+  const handleOnDelete = () => {
+    setIsShowDeleteEventModal(true);
+  };
+
   useEffect(() => {
     const getAllLocationsFunc = async () => {
       try {
@@ -72,7 +82,6 @@ function EditEvent() {
     // Clear related Redux state when component unmounts
     return () => {
       dispatch(clearLocationsList());
-      dispatch(clearEventList());
       dispatch(clearGetSelectedEvent());
     };
   }, []);
@@ -149,6 +158,32 @@ function EditEvent() {
     setSelectedLocation(event.target.value);
   };
 
+  const handleYesDeleteEvent = async () => {
+    if (!isEditable || !eventUuid) {
+      return;
+    }
+
+    reintializeErrors();
+    resetFrontendValidationErrors();
+
+    try {
+      const response = await dispatch(deleteEventAction(eventUuid)).unwrap();
+
+      enqueueSnackbar(`Event ${response.title} deleted successfully`, { variant: "success" });
+      navigate("/eventList");
+    } catch (err) {
+      const error = err as SerializedError;
+      setIsServerError(true);
+
+      if (error.message && error.message.length > 0) {
+        setServerErrorMsg(error.message);
+      } else {
+        console.log(error);
+        setServerErrorMsg(UNKNOWN_ERR_MSG);
+      }
+    }
+  };
+
   const handleOnSubmit = async () => {
     if (!isEditable || !eventUuid) {
       return;
@@ -200,6 +235,31 @@ function EditEvent() {
 
   return (
     <>
+      {isShowDeleteEventModal && (
+        <Dialog
+          open={isShowDeleteEventModal}
+          onClose={handleNoDeleteEvent}
+          aria-labelledby="alert-dialog-delete-event--title"
+          aria-describedby="alert-dialog-delete-event--description"
+          role="alertdialog"
+          closeAfterTransition={false}
+        >
+          <DialogTitle id="alert-dialog-delete-event--title">
+            {"Delete Event"}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-delete-event--description">
+              Are you sure you want to delete event {selectedEvent ? selectedEvent.title : ''}?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleNoDeleteEvent} autoFocus>
+              No
+            </Button>
+            <Button color="error" variant="contained" onClick={handleYesDeleteEvent}>Yes</Button>
+          </DialogActions>
+        </Dialog>
+      )}
       <Backdrop
         sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
         open={
@@ -251,6 +311,10 @@ function EditEvent() {
                   <FormHelperText id="input-eventTitle-error">{eventTitleValidationErrMsg}</FormHelperText>
                 )}
               </FormControl>
+
+              <Typography variant="body1">
+                <Box component="span" sx={{ fontWeight: "bold" }}>Number of Current Attendees:</Box> {!selectedEvent ? "" : selectedEvent.members.length}
+              </Typography>
 
               <FormControl error={maxAttendeesValidationErrMsg !== null} variant="standard" fullWidth>
                 <NumberSpinner
@@ -329,6 +393,7 @@ function EditEvent() {
                   justifyContent: "space-between"
                 }}>
                   <Button onClick={handleOnSubmit} variant="contained">Submit</Button>
+                  <Button onClick={handleOnDelete} color="error" variant="contained">Delete</Button>
                   <Button onClick={reinitializeAllOfForm} variant="outlined">Cancel</Button>
                 </Grid>
               )}

@@ -117,3 +117,31 @@ export async function editEvent(data: EditEventRequest): Promise<RawEvent> {
     throw new Error(UNKNOWN_ERR_MSG);
   }
 }
+
+export async function deleteEvent(eventUuid: string): Promise<RawEvent> {
+  const url = `/api/event/deleteEvent/${eventUuid}`;
+
+  try {
+    const response = await axios.delete(url);
+    return response.data;
+  } catch (err) {
+    console.log(err);
+
+    if (axios.isAxiosError(err)) {
+      if (err && err.response && err.response.data.validationErrors) {
+        const errMsgAry = [];
+        for (const key in err.response.data.validationErrors) {
+          if (Object.hasOwn(err.response.data.validationErrors, key)) {
+            errMsgAry.push(err.response.data.validationErrors[key]);
+          }
+        }
+
+        throw new Error(errMsgAry.join('; '));
+      } else if (err && err.response && err.response.data.error) {
+        throw new Error(err.response.data.error);
+      }
+    }
+
+    throw new Error(UNKNOWN_ERR_MSG);
+  }
+}
