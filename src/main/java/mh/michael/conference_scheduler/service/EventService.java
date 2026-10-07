@@ -60,6 +60,22 @@ public class EventService {
   }
 
   @Transactional
+  public EventDTO getEventByUuid(String eventUuidStr) {
+    UUID eventUuid = UuidMethods.getUuidFromString(eventUuidStr);
+
+    Optional<Event> optEvent = eventRepository.findByEventUuid(eventUuid);
+
+    if (optEvent.isEmpty()) {
+      log.error("getEventByUuid: Event not found for uuid {}", eventUuidStr);
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, INTERNAL_SERVER_ERROR_MSG);
+    }
+
+    Event event = optEvent.get();
+
+    return ConvertDTOUtil.convertEventToEventDTO(event);
+  }
+
+  @Transactional
   public EventDTO createEvent(
     JwtUserDetails jwtUserDetails,
     NewEventRequestDTO newEventRequestDTO

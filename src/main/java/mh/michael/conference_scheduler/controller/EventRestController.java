@@ -25,6 +25,13 @@ public class EventRestController {
     this.eventService = eventService;
   }
 
+  @GetMapping("/getEvent/{eventUuid}")
+  @PreAuthorize("hasRole('ADMIN') or hasRole('SCHEDULER') or hasRole('MEMBER')")
+  public EventDTO getEvent(@Valid @ValidUuid @PathVariable String eventUuid) {
+    log.debug("EventRestController::getEvent");
+    return eventService.getEventByUuid(eventUuid);
+  }
+
   @PostMapping("/createEvent")
   @PreAuthorize("hasRole('ADMIN') or hasRole('SCHEDULER')")
   public EventDTO createEvent(
