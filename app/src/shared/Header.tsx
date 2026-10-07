@@ -79,6 +79,10 @@ function Header() {
     {
       title: 'Events',
       path: '/eventList'
+    },
+    {
+      title: 'Events - Add New Event',
+      path: '/createEvent'
     }
   ];
 

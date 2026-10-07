@@ -1,18 +1,21 @@
-import { Backdrop, CircularProgress, Grid, Box, Stack, Typography } from "@mui/material";
+import { Backdrop, CircularProgress, Grid, Box, Stack, Typography, Button } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { useEffect, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import { useSnackbar } from "notistack";
 import type { SerializedError } from "@reduxjs/toolkit";
+import { useNavigate } from "react-router";
 import { useAppDispatch, useAppSelector, type RootState } from "../../app/store";
 import { clearEventList, getEventsInDateRangeAction, type GetEventsInDataRangeReqObj } from "./eventSlice";
 import { ISO_DATE_FORMAT_PATTERN, READABLE_DATE_ONLY_FORMAT_PATTERN, UNKNOWN_ERR_MSG } from "../../constants/globalConstants";
 import { selectEventListWithIdAndFiltered } from "./eventSelectors";
 import EventCard from "./EventCard";
+import { UserRole } from "../../constants/userConstants";
 
 function EventList() {
   const dispatch = useAppDispatch();
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
 
   const [dayOneDate, setDayOneDate] = useState<Dayjs | null>(dayjs().startOf('date'));
 
@@ -24,6 +27,11 @@ function EventList() {
   const dayTwoEventList = useAppSelector((state: RootState) => selectEventListWithIdAndFiltered(state, dayTwoDate || dayjs()));
   const dayThreeEventList = useAppSelector((state: RootState) => selectEventListWithIdAndFiltered(state, dayThreeDate || dayjs()));
   const dayFourEventList = useAppSelector((state: RootState) => selectEventListWithIdAndFiltered(state, dayFourDate || dayjs()));
+  const { currentUser } = useAppSelector((state: RootState) => state.user);
+  const { roles = [] } = currentUser ?? {};
+
+  const isAdminUser = roles.includes(UserRole.ROLE_ADMIN);
+  const isSchedulerUser = roles.includes(UserRole.ROLE_SCHEDULER);
 
   useEffect(() => {
     // Clean up on unmount
@@ -65,6 +73,10 @@ function EventList() {
       dayFourDate !== null && dayFourDate !== undefined;
   };
 
+  const handleClickAddNewEvent = () => {
+    navigate("/createEvent");
+  };
+
   return (
     <>
       <Backdrop
@@ -86,6 +98,22 @@ function EventList() {
           </Typography>
         </Grid>
       </Grid>
+      {(isAdminUser || isSchedulerUser) && (
+        <Grid container>
+          <Grid
+            sx={{
+              xs: 12
+            }}
+          >
+            <Box sx={{
+              marginTop: 2,
+              marginBottom: 2
+            }}>
+              <Button color="primary" variant="contained" onClick={handleClickAddNewEvent}>Add New Event</Button>
+            </Box>
+          </Grid>
+        </Grid>
+      )}
       <Grid container>
         <Grid
           sx={{

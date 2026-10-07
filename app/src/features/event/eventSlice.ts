@@ -1,15 +1,17 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { REDUX_ACTION_STATUS } from "../../constants/globalConstants";
 import type { RawEvent } from "../../constants/eventConstants";
-import { getEventsInDateRange } from "../../api/eventAPI";
+import { createNewEvent, getEventsInDateRange, type NewEventRequest } from "../../api/eventAPI";
 
 export interface EventState {
   getEventsInDateRangeRequestStatus: REDUX_ACTION_STATUS,
+  createNewEventRequestStatus: REDUX_ACTION_STATUS,
   eventList: Array<RawEvent>
 }
 
 const initialState: EventState = {
   getEventsInDateRangeRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
+  createNewEventRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
   eventList: []
 };
 
@@ -25,12 +27,20 @@ export const getEventsInDateRangeAction = createAsyncThunk(
   }
 );
 
+export const createNewEventAction = createAsyncThunk(
+  'event/createNewEventAction',
+  async (data: NewEventRequest) => {
+    return await createNewEvent(data);
+  }
+);
+
 export const eventSlice = createSlice({
   name: "event",
   initialState,
   reducers: {
     clearEventList: (state) => {
       state.getEventsInDateRangeRequestStatus = REDUX_ACTION_STATUS.IDLE_STATUS;
+      state.createNewEventRequestStatus = REDUX_ACTION_STATUS.IDLE_STATUS;
       state.eventList = [];
     }
   },
@@ -45,6 +55,15 @@ export const eventSlice = createSlice({
       })
       .addCase(getEventsInDateRangeAction.rejected, (state) => {
         state.getEventsInDateRangeRequestStatus = REDUX_ACTION_STATUS.ERROR_STATUS;
+      })
+      .addCase(createNewEventAction.fulfilled, (state) => {
+        state.createNewEventRequestStatus = REDUX_ACTION_STATUS.SUCCESS_STATUS;
+      })
+      .addCase(createNewEventAction.pending, (state) => {
+        state.createNewEventRequestStatus = REDUX_ACTION_STATUS.PENDING_STATUS;
+      })
+      .addCase(createNewEventAction.rejected, (state) => {
+        state.createNewEventRequestStatus = REDUX_ACTION_STATUS.ERROR_STATUS;
       });
   }
 });

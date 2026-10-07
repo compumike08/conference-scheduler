@@ -16,6 +16,7 @@ import LocationList from "./features/location/LocationList.tsx";
 import CreateLocation from "./features/location/createLocation/CreateLocation.tsx";
 import EditLocation from "./features/location/editLocation/EditLocation.tsx";
 import EventList from "./features/event/EventList.tsx";
+import CreateEvent from "./features/event/createEvent/CreateEvent.tsx";
 
 import "./App.css";
 
@@ -53,6 +54,14 @@ const App = () => {
             element={
               <ProtectedRoute isAuthenticated={isAdminUser || isMemberUser || isSchedulerUser}>
                 <EventList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/createEvent"
+            element={
+              <ProtectedRoute isAuthenticated={isAdminUser || isSchedulerUser}>
+                <CreateEvent />
               </ProtectedRoute>
             }
           />
