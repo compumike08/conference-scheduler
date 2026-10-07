@@ -51,11 +51,6 @@ function EventCard({...props}: EventCardProps) {
                     <Box sx={{ fontWeight: "bold" }} component="span">Location: </Box>{props.event.location.locationName}
                   </Typography>
                 </Box>
-                <Box component="div">
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    <Box sx={{ fontWeight: "bold" }} component="span">Description: </Box>{props.event.description}
-                  </Typography>
-                </Box>
               </Stack>
             </Grid>
           </Grid>
