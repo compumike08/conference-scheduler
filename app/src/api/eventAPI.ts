@@ -38,6 +38,44 @@ export async function getEventByUuid(eventUuid: string): Promise<RawEvent> {
   }
 }
 
+export async function joinEvent(eventUuid: string): Promise<RawEvent> {
+  const url = `/api/event/joinEvent/${eventUuid}`;
+
+  try {
+    const response = await axios.put(url);
+    return response.data;
+  } catch (err) {
+    console.log(err);
+
+    if (axios.isAxiosError(err)) {
+      if (err && err.response && err.response.data.error) {
+        throw new Error(err.response.data.error);
+      }
+    }
+
+    throw new Error(UNKNOWN_ERR_MSG);
+  }
+}
+
+export async function removeMemberFromEvent(eventUuid: string): Promise<RawEvent> {
+  const url = `/api/event/removeMemberFromEvent/${eventUuid}`;
+
+  try {
+    const response = await axios.put(url);
+    return response.data;
+  } catch (err) {
+    console.log(err);
+
+    if (axios.isAxiosError(err)) {
+      if (err && err.response && err.response.data.error) {
+        throw new Error(err.response.data.error);
+      }
+    }
+
+    throw new Error(UNKNOWN_ERR_MSG);
+  }
+}
+
 export async function getEventsInDateRange(startDate: string, endDate: string): Promise<Array<RawEvent>> {
   const url = `/api/event/getEventsInDateRange`;
 

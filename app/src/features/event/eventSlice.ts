@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { REDUX_ACTION_STATUS } from "../../constants/globalConstants";
 import type { RawEvent } from "../../constants/eventConstants";
-import { createNewEvent, deleteEvent, editEvent, getEventByUuid, getEventsInDateRange, type EditEventRequest, type NewEventRequest } from "../../api/eventAPI";
+import { createNewEvent, deleteEvent, editEvent, getEventByUuid, getEventsInDateRange, joinEvent, removeMemberFromEvent, type EditEventRequest, type NewEventRequest } from "../../api/eventAPI";
 
 export interface EventState {
   getEventsInDateRangeRequestStatus: REDUX_ACTION_STATUS,
@@ -9,6 +9,8 @@ export interface EventState {
   getSelectedEventRequestStatus: REDUX_ACTION_STATUS,
   editSelectedEventRequestStatus: REDUX_ACTION_STATUS,
   deleteSelectedEventRequestStatus: REDUX_ACTION_STATUS,
+  joinSelectedEventRequestStatus: REDUX_ACTION_STATUS,
+  unjoinSelectedEventRequestStatus: REDUX_ACTION_STATUS,
   eventList: Array<RawEvent>,
   selectedEvent: RawEvent | null
 }
@@ -19,6 +21,8 @@ const initialState: EventState = {
   getSelectedEventRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
   editSelectedEventRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
   deleteSelectedEventRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
+  joinSelectedEventRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
+  unjoinSelectedEventRequestStatus: REDUX_ACTION_STATUS.IDLE_STATUS,
   eventList: [],
   selectedEvent: null
 };
@@ -63,6 +67,20 @@ export const deleteEventAction = createAsyncThunk(
   }
 );
 
+export const joinEventAction = createAsyncThunk(
+  'event/joinEventAction',
+  async (eventUuid: string) => {
+    return await joinEvent(eventUuid);
+  }
+);
+
+export const unjoinEventAction = createAsyncThunk(
+  'event/unjoinEventAction',
+  async (eventUuid: string) => {
+    return await removeMemberFromEvent(eventUuid);
+  }
+);
+
 export const eventSlice = createSlice({
   name: "event",
   initialState,
@@ -75,6 +93,8 @@ export const eventSlice = createSlice({
     clearGetSelectedEvent: (state) => {
       state.getSelectedEventRequestStatus = REDUX_ACTION_STATUS.IDLE_STATUS;
       state.deleteSelectedEventRequestStatus = REDUX_ACTION_STATUS.IDLE_STATUS;
+      state.joinSelectedEventRequestStatus = REDUX_ACTION_STATUS.IDLE_STATUS;
+      state.unjoinSelectedEventRequestStatus = REDUX_ACTION_STATUS.IDLE_STATUS;
       state.selectedEvent = null;
     }
   },
@@ -126,6 +146,26 @@ export const eventSlice = createSlice({
       })
       .addCase(deleteEventAction.rejected, (state) => {
         state.deleteSelectedEventRequestStatus = REDUX_ACTION_STATUS.ERROR_STATUS;
+      })
+      .addCase(joinEventAction.fulfilled, (state, action: PayloadAction<RawEvent>) => {
+        state.joinSelectedEventRequestStatus = REDUX_ACTION_STATUS.SUCCESS_STATUS;
+        state.selectedEvent = action.payload;
+      })
+      .addCase(joinEventAction.pending, (state) => {
+        state.joinSelectedEventRequestStatus = REDUX_ACTION_STATUS.PENDING_STATUS;
+      })
+      .addCase(joinEventAction.rejected, (state) => {
+        state.joinSelectedEventRequestStatus = REDUX_ACTION_STATUS.ERROR_STATUS;
+      })
+      .addCase(unjoinEventAction.fulfilled, (state, action: PayloadAction<RawEvent>) => {
+        state.unjoinSelectedEventRequestStatus = REDUX_ACTION_STATUS.SUCCESS_STATUS;
+        state.selectedEvent = action.payload;
+      })
+      .addCase(unjoinEventAction.pending, (state) => {
+        state.unjoinSelectedEventRequestStatus = REDUX_ACTION_STATUS.PENDING_STATUS;
+      })
+      .addCase(unjoinEventAction.rejected, (state) => {
+        state.unjoinSelectedEventRequestStatus = REDUX_ACTION_STATUS.ERROR_STATUS;
       });
   }
 });

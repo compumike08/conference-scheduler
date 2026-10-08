@@ -10,7 +10,7 @@ import { UNKNOWN_ERR_MSG, REDUX_ACTION_STATUS } from "../../../constants/globalC
 import NumberSpinner from "../../../shared/NumberSpinner";
 import { selectLocationListWithId } from "../../location/locationSelectors";
 import { getAllLocationsAction, clearLocationsList } from "../../location/locationSlice";
-import { clearGetSelectedEvent, deleteEventAction, editEventAction, getSelectedEventAction } from "../eventSlice";
+import { clearGetSelectedEvent, deleteEventAction, editEventAction, getSelectedEventAction, joinEventAction, unjoinEventAction } from "../eventSlice";
 import { selectSelectedEventWithDayjsDates } from "../eventSelectors";
 import { UserRole } from "../../../constants/userConstants";
 import type { EditEventRequest } from "../../../api/eventAPI";
@@ -34,6 +34,13 @@ function EditEvent() {
       selectedEvent !== null &&
       currentUser.userUuid === selectedEvent.createdByUser.userUuid
     );
+  
+  const isMemberUser = roles.includes(UserRole.ROLE_MEMBER);
+  const isJoinedEvent = selectedEvent !== null && currentUser !== null ?
+    selectedEvent.members.map(member => member.userUuid).includes(currentUser.userUuid) : false;
+  
+  const isMaxNumAttendeesMet = selectedEvent !== null ?
+    selectedEvent.members.length >= selectedEvent.maxAttendees : false;
 
   const [eventTitle, setEventTitle] = useState("");
   const [maxAttendees, setMaxAttendees] = useState(1);
@@ -233,6 +240,40 @@ function EditEvent() {
     }
   };
 
+  const handleJoinEvent = async () => {
+    if (eventUuid) {
+      try {
+        await dispatch(joinEventAction(eventUuid)).unwrap();
+      } catch (err) {
+        const error = err as SerializedError;
+
+        if (error.message && error.message.length > 0) {
+          enqueueSnackbar(error.message, { variant: "error" });
+        } else {
+          console.log(error);
+          enqueueSnackbar(UNKNOWN_ERR_MSG, { variant: "error" });
+        }
+      }
+    }
+  };
+
+  const handleUnjoinEvent = async () => {
+    if (eventUuid) {
+      try {
+        await dispatch(unjoinEventAction(eventUuid)).unwrap();
+      } catch (err) {
+        const error = err as SerializedError;
+
+        if (error.message && error.message.length > 0) {
+          enqueueSnackbar(error.message, { variant: "error" });
+        } else {
+          console.log(error);
+          enqueueSnackbar(UNKNOWN_ERR_MSG, { variant: "error" });
+        }
+      }
+    }
+  };
+
   return (
     <>
       {isShowDeleteEventModal && (
@@ -315,6 +356,19 @@ function EditEvent() {
               <Typography variant="body1">
                 <Box component="span" sx={{ fontWeight: "bold" }}>Number of Current Attendees:</Box> {!selectedEvent ? "" : selectedEvent.members.length}
               </Typography>
+
+              {selectedEvent !== null && isMemberUser && (
+                <Grid container sx={{
+                  justifyContent: "center"
+                }}>
+                  {isJoinedEvent && (
+                    <Button fullWidth variant="contained" color="error" onClick={handleUnjoinEvent}>Unjoin Event</Button>
+                  )}
+                  {!isJoinedEvent && !isMaxNumAttendeesMet && (
+                    <Button fullWidth variant="contained" onClick={handleJoinEvent}>Join Event</Button>
+                  )}
+                </Grid>
+              )}
 
               <FormControl error={maxAttendeesValidationErrMsg !== null} variant="standard" fullWidth>
                 <NumberSpinner
